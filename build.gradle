@@ -27,3 +27,20 @@ dependencies {
 	compile('org.springframework.boot:spring-boot-starter')
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 }
+
+
+/*findMainClass.doFirst {
+    File localFile = file("build/classes/main/com/rencaijia/local/LocalConfig.class")
+    File localFile1 = file("build/classes/main/local/Local_Config.class")
+    File localFile2 = file("build/resources/main/config/application.yml")
+    if (localFile.exists()) {
+        println("删除本地配置文件" + localFile.name + "-" + localFile2.name)
+        localFile.delete()
+    }
+    if (localFile2.exists()) {
+        localFile2.delete()
+    }
+    if (localFile1.exists()) {
+        localFile1.delete()
+    }
+}*/
