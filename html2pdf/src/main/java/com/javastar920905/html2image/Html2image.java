@@ -26,7 +26,14 @@ public class Html2image {
                 Html2image.class.getClassLoader().getResource(imagePath).getPath();
             //   返回值为 /D:/gitrepository/java-demo/html2pdf/out/production/resources/bg/48.jpg
             /**windows下一定要用"file://D:/gitrepository/" 路径才能截图成功, file:/后面一定只能跟一个/ 多一个都不行...**/
-            imageAbsolutePath = String.format("file:%s", imageAbsolutePath);
+
+            if (showImagePath.startsWith("/")) {
+                // linux 获取的路径是以/开头的
+                imageAbsolutePath = String.format("file:%s", imageAbsolutePath);
+            } else {
+                // windows系统是以磁盘名开头的
+                imageAbsolutePath = String.format("file:/%s", imageAbsolutePath);
+            }
             // 解决File.separator 在windows系统时获取的值为\的问题,应该替换为/才能正常显示图片
             imageAbsolutePath = imageAbsolutePath.replaceAll("\\\\", "/");
             System.out.println("图片链接为:" + imageAbsolutePath);
