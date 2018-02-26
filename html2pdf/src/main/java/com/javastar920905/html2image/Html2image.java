@@ -31,7 +31,7 @@ public class Html2image {
                 // linux 获取的路径是以/开头的
                 imageAbsolutePath = String.format("file:%s", imageAbsolutePath);
             } else {
-                // windows系统是以磁盘名开头的
+                // windows系统是以磁盘名开头的,file:后面需要手动加"/" 拼凑为file:/
                 imageAbsolutePath = String.format("file:/%s", imageAbsolutePath);
             }
             // 解决File.separator 在windows系统时获取的值为\的问题,应该替换为/才能正常显示图片
