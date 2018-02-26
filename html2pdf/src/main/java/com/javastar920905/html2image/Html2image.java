@@ -25,7 +25,7 @@ public class Html2image {
             String imageAbsolutePath =
                 Html2image.class.getClassLoader().getResource(imagePath).getPath();
             //   返回值为 /D:/gitrepository/java-demo/html2pdf/out/production/resources/bg/48.jpg
-            /**windows下一定要用"file://D:/gitrepository/" 路径才能截图成功, file:/后面一定只能跟一个/ 多一个都不行...**/
+            /**windows下一定要用"file:/D:/gitrepository/" 路径才能截图成功, file:/后面一定只能跟一个/ 多一个都不行...**/
 
             if (imageAbsolutePath.startsWith("/")) {
                 // linux 获取的路径是以/开头的
