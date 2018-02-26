@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<kmodule xmlns="http://www.drools.org/xsd/kmodule">
+    <!--每一个kbase都有一个name，可以取任意字符串，但是不能重名-->
+    <kbase name="helloWorldBase">
+        <!--每一个ksession都有一个name，名字也可以是任意字符串，但是也不能重复-->
+        <ksession name="helloWorldSession"/>
+    </kbase>
+</kmodule>

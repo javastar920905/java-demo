@@ -1,0 +1,45 @@
+/**
+定义规则：
+
+ 过生日，则加10分，并且将当月交易比数翻倍后再计算积分
+
+ 2011-01-08 - 2011-08-08每月信用卡还款3次以上，每满3笔赠送30分
+
+ 当月购物总金额100以上，每100元赠送10分
+
+ 当月购物次数5次以上，每五次赠送50分
+
+ 特别的，如果全部满足了要求，则额外奖励100分
+
+ 发生退货，扣减10分
+
+ 退货金额大于100，扣减100分
+
+//todo 剩下的就是定义两个规则文件，分别用于积分发放和积分扣减
+**/
+package com.drools.demo.point
+
+import com.javastar920905.entity.PointDomain;
+
+//积分扣除规则文件
+rule subBackNumsPoint
+    // 发生退货，扣减10分
+    salience 10
+    lock-on-active true
+    when
+        $pointDomain : PointDomain(backNums >= 1)
+    then
+        $pointDomain.setPoint($pointDomain.getPoint()-10);
+        $pointDomain.recordPointLog($pointDomain.getUserName(),"subBackNumsPoint");
+end
+
+rule subBackMondyPoint
+    // 退货金额大于100，扣减100分
+    salience 9
+    lock-on-active true
+    when
+        $pointDomain : PointDomain(backMondy >= 100)
+    then
+        $pointDomain.setPoint($pointDomain.getPoint()-10);
+        $pointDomain.recordPointLog($pointDomain.getUserName(),"subBackMondyPoint");
+end

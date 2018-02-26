@@ -1,0 +1,60 @@
+/**
+    package 包名
+
+    rule "规则名"
+    when
+        (条件) - 也叫作规则的 LHS(Left Hand Side)
+    then
+        (动作/结果) - 也叫作规则的 RHS(Right Hand Side)
+    end
+
+示例参考:
+    每个 drl 都必须声明一个包名,这个包名与 Java 里面的不同，它不需要与文件夹的层次结构一致。
+    规则名是规则的唯一标识，所以规则编写过程中需要保证它是不重复的。
+    规则的条件(LHS)是按照 DRL 语言编写的，条件eval(true)表示永远为真，即该条规则总会获得执行。
+    而规则的结果(RHS)使用 Java 语言实现，简单地输出了 HelloWorld 字样。
+    为了简单起见，这里不对 DRL 作完全的描述，更详细的语法请参考：http://docs.jboss.org/drools/release/6.5.0.Final/drools-docs/html_single/index.html#d0e4235
+
+
+这个规则文件里面包含4个部分：package、import和两个rule：
+
+package：package语句的定义跟Java里面的package语句类似，唯一不同的就是在DRL文件中package后面跟的包名是不需要跟文件目录有对应关系的，上例就可以看出来这个不同：package定义是os.nut.drools，而所在的目录是rules。
+
+import：import语句的含义跟java中是一样的，就是如果在本文件中需要使用某些类的话，需要通过import语句引入进来，如果需要的类在 package定义的包中就不需要再引入了，这个跟Java的概念是一致的。在上例中的import语句其实是没有必要的。
+
+rule：上例定义了两个rule，也就是定义了两个规则。一个规则以rule关键字开始，以end关键字结束。上面一个rule包含了三个部分，分别是name、when、then。
+
+name紧跟在rule关键字之后，可以是一个以引号（双引号、单引号均可）包含的字符串，可以包含空格等字符，如果字符串只包含字母、数字、下划线（也就是Java变量命名规则）的话，也可以不用引号，但是推荐使用引号。
+
+when语句的意思就是执行下面then语句的条件，也就是说当when条件满足的情况下，才会执行then，类似于Java里面的if语句，为什么用when而不用if呢，这是因为when代表的意思是当什么“ 事件 ”发生时，当什么“ 事实 ”存在时，然后执行then。
+
+then语句就是执行的动作，就是当什么事件发生，或者什么事实存在时，执行的动作序列。then后面的语句也就是Action。
+
+事件和事实是什么东西呢？在Drools里面这两个分别称之为“Event”和“Fact”，“事件”其实也是“事实”，只不过是一种特殊的事实而已。
+
+事实是什么东西呢？一个事实其实就是一个POJO，只不过这个Java对象是存放在一个特殊的空间里面，这个空间就是“Working Memory”，所有存放在Working Memory里面的对象都是事实（Fact）。when语句就是检查在Working Memory里面是不是存在满足条件的事实。
+
+事件呢？怎么个特殊法？这个我们可以暂时不用管它，到后面学习CEP的时候自然就会理解了。CEP是什么？现在不用管它！
+
+**/
+
+package helloworld;
+//在本文件中需要使用某些类的话，需要通过import语句引入进来，如果需要的类在 package定义的包中就不需要再引入了
+import com.javastar920905.entity.Demo1;
+
+//规则1 hellowrod
+rule "helloworld"
+    when
+        eval(true)
+    then
+        System.out.println("hello world!");
+end
+
+//规则2 GoodBye
+rule "GoodBye"
+    when
+        //当存在一个Demo1对象 并且msg=="bye",则执行then语句,否则不执行;   :是将后面的对象赋值給$demo
+        $demo:Demo1(msg=="bye")
+    then
+        System.out.println( $demo.getMsg() );
+end
