@@ -25,6 +25,8 @@ repositories {
 
 dependencies {
     compile('org.springframework.boot:spring-boot-starter')
+    /*添加百度语音api*/
+    compile 'com.baidu.aip:java-sdk:4.1.1'
     testCompile('org.springframework.boot:spring-boot-starter-test')
 }
 

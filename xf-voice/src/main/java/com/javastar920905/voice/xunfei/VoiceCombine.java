@@ -1,4 +1,4 @@
-package com.javastar920905.voice;
+package com.javastar920905.voice.xunfei;
 
 
 import com.iflytek.cloud.speech.SpeechConstant;
