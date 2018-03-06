@@ -36,6 +36,8 @@ subprojects {
     }
 
     dependencies{
+        //lombok
+        compile("org.projectlombok:lombok:1.16.18")
         //logback 依赖
         compile("org.slf4j:slf4j-api:${slf4jVersion}")
         compile("org.slf4j:log4j-over-slf4j:${slf4jVersion}")
@@ -59,27 +61,6 @@ subprojects {
     }
 }
 
-
-buildscript {
-    ext {
-        springBootVersion = '1.5.9.RELEASE'
-    }
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-    }
-}
-apply plugin: 'org.springframework.boot'
-
-repositories {
-    mavenCentral()
-}
-dependencies {
-    compile('org.springframework.boot:spring-boot-starter')
-    testCompile('org.springframework.boot:spring-boot-starter-test')
-}
 
 /*findMainClass.doFirst {
     File localFile = file("build/classes/main/com/rencaijia/local/LocalConfig.class")

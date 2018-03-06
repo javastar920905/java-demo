@@ -14,20 +14,30 @@ public interface CommonConstants {
    */
   String SSOSESSION = "SSO_SESSION";
 
-  @AllArgsConstructor
   @Getter
   enum Charset {
-    utf8("utf-8"), gbk("gbk");
+    utf8("", "utf-8"), gbk("", "gbk");
+    private String name;
     private String value;
+
+    Charset(String name, String value) {
+      this.name = name;
+      this.value = value;
+    }
   }
 
-  @AllArgsConstructor
   @Getter
   enum DateForm {
-    yyyyMMdd_("yyyy-MM-dd"), MMddyyyy_("MM-dd-yyyy"), yyyyMMddHHmmss_(
-        "yyyy-MM-dd hh:mm:ss"), yyyyMMdd(
-            "yyyy/MM/dd"), MMddyyyy("MM/dd/yyyy"), yyyyMMddHHmmss("yyyy/MM/dd hh:mm:ss");
+    yyyyMMdd_("", "yyyy-MM-dd"), MMddyyyy_("", "MM-dd-yyyy"), yyyyMMddHHmmss_("",
+        "yyyy-MM-dd hh:mm:ss"), yyyyMMdd("",
+            "yyyy/MM/dd"), MMddyyyy("", "MM/dd/yyyy"), yyyyMMddHHmmss("", "yyyy/MM/dd hh:mm:ss");
+    private String name;
     private String value;
+
+    DateForm(String name, String value) {
+      this.name = name;
+      this.value = value;
+    }
   }
 
 }

@@ -1,0 +1,50 @@
+
+buildscript {
+    ext {
+        springBootVersion = '1.5.9.RELEASE'
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+apply plugin: 'org.springframework.boot'
+apply plugin: "war"
+
+repositories {
+    mavenCentral()
+}
+dependencies {
+    compile project(':tools')
+    compile('org.springframework.boot:spring-boot-starter')
+    compile("org.springframework.boot:spring-boot-starter-web")
+    compile("org.springframework.boot:spring-boot-starter-thymeleaf")
+    compile("org.springframework.boot:spring-boot-starter-data-redis")
+
+    compile("com.mangofactory:swagger-springmvc:1.0.2")
+
+   /* //motan
+    compile("com.weibo:motan-core:${motanVer}")
+    compile("com.weibo:motan-transport-netty:${motanVer}")
+    compile("com.weibo:motan-springsupport:${motanVer}")
+    //motan zookeeper
+    compile("com.weibo:motan-registry-zookeeper:${motanVer}")
+
+
+      //持久层依赖
+    compile("mysql:mysql-connector-java:5.1.35")
+    compile("com.alibaba:druid:1.1.6")
+    compile("org.mybatis:mybatis-spring:1.3.1")
+    compile("org.mybatis.generator:mybatis-generator:1.3.5")
+    compile("org.mybatis.generator:mybatis-generator-maven-plugin:1.3.5")
+    compile("org.mybatis:mybatis:3.4.2")
+    compile("org.elasticsearch.client:transport:5.2.1")
+    compile("org.elasticsearch:elasticsearch:5.2.1")
+    compile("com.github.pagehelper:pagehelper:4.2.1")
+    */
+
+
+    testCompile('org.springframework.boot:spring-boot-starter-test')
+}

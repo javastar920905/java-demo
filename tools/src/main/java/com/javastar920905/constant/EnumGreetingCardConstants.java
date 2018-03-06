@@ -14,7 +14,6 @@ public interface EnumGreetingCardConstants {
   String REDISKEY_RANKING_GREETING_CARD_ID = "cms:ranking:greetingCardId";
 
   @Getter
-  @AllArgsConstructor
   @Accessors(chain = true)
   enum OperationType {
     /**
@@ -24,21 +23,29 @@ public interface EnumGreetingCardConstants {
 
     private String desc;
     private int value;
+
+    OperationType(String desc, int value) {
+      this.desc = desc;
+      this.value = value;
+    }
   }
 
-  @Getter
-  @AllArgsConstructor
-  @Accessors(chain = true)
-  enum Status {
-    /**
-     * 贺卡状态
-     */
-    normal("正常状态", 0), deleted("已删除", -1);
-
-    private String desc;
-    private int value;
-
-  }
+  /*
+   * 
+   * @Getter
+   * 
+   * @AllArgsConstructor TODO 这种方式不能使用 不知道为什么
+   * 
+   * @Accessors(chain = true) enum Status {
+   *//**
+      * 贺卡状态
+      *//*
+         * normal("正常状态", 0), deleted("已删除", -1);
+         * 
+         * private String desc; private int value;
+         * 
+         * }
+         */
 
 
 }

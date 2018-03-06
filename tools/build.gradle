@@ -31,9 +31,6 @@ dependencies {
     //spring mail支持
     compile("org.springframework:spring-context-support:${springVersion}")
     compile("org.springframework.session:spring-session-data-redis:1.2.1.RELEASE")
-
-    //lombok
-    compile("org.projectlombok:lombok:1.16.18")
 }
 
 
