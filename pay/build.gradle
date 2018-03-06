@@ -1,12 +1,20 @@
 version = "1.0"
 
-jar{
+jar {
     archiveName = 'pay.jar'
 }
 
 
 dependencies {
-   compile project(':tools')
+    compile project(':tools')
+    compile project(':entity')
+
+    //持久层依赖 mybatis plus
+    compile("mysql:mysql-connector-java:5.1.35")
+    compile("com.alibaba:druid:1.1.6")
+    compile("com.github.pagehelper:pagehelper:4.2.1")
+    compile('com.baomidou:mybatis-plus:2.1.9')
+
 }
 
 

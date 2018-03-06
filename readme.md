@@ -1,4 +1,18 @@
-示例代码是写在test目录下的(为了方便单元测试)
+# 项目结构介绍
+## java-demo (是一个gradle 的多模块项目)
+--
+    doc (描述开发规范的项目)
+    entity (实体类项目)
+    html2pdf (html转pdf或图片的项目)
+    pay (使用mybatis plus 开发的支付类项目)
+    rule-engine (规则引擎demo 项目)
+    tools   (工具类模块)
+    web     (spring boot项目)
+    web2-sso    (spring boot项目  使用spring session 实现和web项目统一分享session )
+    xf-voice    (讯飞和百度语音合成demo )
+
+
+java 8示例代码是写在test目录下的(为了方便单元测试)
 https://github.com/javastar920905/java-demo/tree/master/src/test/java/com/javastar920905/javademo/java8/stream
 
 参考文档 : http://url.cn/5MQWlIV (java8实战)

@@ -95,4 +95,13 @@ public class SpringContextUtil implements ApplicationContextAware {
     return applicationContext.getAliases(name);
   }
 
+  /**
+   * 打印bean名称
+   */
+  public static void printBeanName() {
+    String[] names = applicationContext.getBeanDefinitionNames();
+    for (String name : names) {
+      System.out.println(name);
+    }
+  }
 }
