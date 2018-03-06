@@ -1,12 +1,12 @@
 package com.javastar920905.voice.xunfei;
 
-
+/*
 import com.iflytek.cloud.speech.SpeechConstant;
 import com.iflytek.cloud.speech.SpeechError;
 import com.iflytek.cloud.speech.SpeechSynthesizer;
 import com.iflytek.cloud.speech.SpeechUtility;
 import com.iflytek.cloud.speech.SynthesizeToUriListener;
-import com.iflytek.cloud.speech.SynthesizerListener;
+import com.iflytek.cloud.speech.SynthesizerListener;*/
 
 import java.util.concurrent.TimeUnit;
 
@@ -15,12 +15,12 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * 语音合成示例  http://doc.xfyun.cn/msc_java/299247
  * <p>
- * TODO 改示例还未测试通过
+ * TODO 改示例还未测试通过 (同时需要手动引入本地jar xf-voice/lib/lib)
  * 合成出现问题.错误代码：20021
  * 错误原因：引擎错误.
  */
 public class VoiceCombine {
-    public static void main(String[] args) {
+  /*  public static void main(String[] args) {
         // 将“XXXXXXXX”替换成您申请的APPID
         //SpeechUtility.createUtility(SpeechConstant.APPID + "=5a964e39");
         SpeechUtility.createUtility(String.format("%s= %s ", SpeechConstant.APPID, "5a964e39"));
@@ -66,9 +66,9 @@ public class VoiceCombine {
     }
 
 
-    /**
+    *//**
      * 合成监听器2
-     **/
+     **//*
     static SynthesizeToUriListener synthesizeToUriListener = new SynthesizeToUriListener() {
         //progress为合成进度0~100
         @Override public void onBufferProgress(int progress) {
@@ -92,9 +92,9 @@ public class VoiceCombine {
     };
 
 
-    /**
+    *//**
      * 合成监听器1
-     **/
+     **//*
     private static SynthesizerListener mSynListener = new SynthesizerListener() {
         //会话结束回调接口，没有错误时，error为null
         @Override public void onCompleted(SpeechError error) {
@@ -126,5 +126,5 @@ public class VoiceCombine {
 
         @Override public void onEvent(int i, int i1, int i2, int i3, Object o, Object o1) {
         }
-    };
+    };*/
 }
