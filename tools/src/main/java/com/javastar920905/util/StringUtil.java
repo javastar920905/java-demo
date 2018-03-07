@@ -2,11 +2,16 @@ package com.javastar920905.util;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.UUID;
 
 /**
  * @author ouzhx on 2018/3/3.
  */
 public class StringUtil {
+
+  public static String generateUUID() {
+    return UUID.randomUUID().toString().replaceAll("-", "");
+  }
 
   /**
    * 数组转String 用,隔开

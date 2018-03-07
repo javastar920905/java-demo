@@ -1,5 +1,6 @@
 package com.javastar920905.entity.domain;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import lombok.Getter;
@@ -10,7 +11,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class User {
+public class User implements Serializable {
   private String id;
   private String name;
   private Date birthday;

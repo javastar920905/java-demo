@@ -1,6 +1,5 @@
 package com.javastar920905.constant;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
@@ -13,6 +12,13 @@ public interface CommonConstants {
    * 多个子系统通用的cookie 名称
    */
   String SSOSESSION = "SSO_SESSION";
+
+  /**
+   * 返回结果通用key (作为一种规范)
+   */
+  enum key {
+    msg, result, data
+  }
 
   @Getter
   enum Charset {

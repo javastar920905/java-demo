@@ -53,6 +53,9 @@ subprojects {
 
         /*私有仓库
         compile("sourceforge.net:cpdetector:1.0.10")*/
+
+        testCompile("junit:junit:4.12")
+        testCompile("org.springframework:spring-test:${springVersion}")
     }
 
     //解决提示"GBK"编码错误
