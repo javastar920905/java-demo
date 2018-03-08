@@ -1,8 +1,10 @@
 package com.javastar920905.service.impl;
 
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Random;
 
+import com.javastar920905.config.RedisConfig;
 import com.javastar920905.entity.domain.RedPacketDetail;
 import com.javastar920905.mapper.RedPacketMapper;
 import com.javastar920905.outer.JSONUtil;
@@ -93,12 +95,12 @@ public class RedPacketServiceImpl extends BaseService implements IRedPacketServi
     RedisConnection connection = null;
     try {
       connection = RedisFactory.getConnection();
-      // 加入redis watch 保证原子性 https://www.jianshu.com/p/361cb9cd13d5
-      /*
-       * connection.watch(getRedPacketQueueKey()); connection.multi(); // doxxx 非原子性操作 val = GET
-       * mykey;val = val + 1;SET mykey $val connection.exec();
-       */
-
+      // 一个红包不能重复领取
+      byte[] queueKey = getRedPacketQueueKey(redPacketId);
+      List<String> userIdList = BeanUtil.toListString(connection.lRange(queueKey, 0, -1));
+      if (userIdList.contains(openId)) {
+        return buildfailResult("已经抢到过该红包,不能重复领取");
+      }
       // 因为列表的pop操作是原子的，即使有很多用户同时到达，也是依次执行的
       if (connection.lPop(getRedPacketKey(redPacketId)) != null) {
         // 抢红包成功,进入拆红包队列(推送队列rabbitmq 或者redis 发布订阅)
@@ -106,7 +108,10 @@ public class RedPacketServiceImpl extends BaseService implements IRedPacketServi
         userJson.put("openId", openId);
         userJson.put("nickName", nickName);
         userJson.put("redPacketId", redPacketId);
-        connection.rPush(getRedPacketQueueKey(), BeanUtil.toByteArray(userJson));
+        byte[] userInfo = BeanUtil.toByteArray(userJson);
+        // 请求进入队列
+        connection.rPush(queueKey, openId.getBytes());
+        connection.publish(RedisConfig.CHANNEL_TOPIC_RED_PACKET.getBytes(), userInfo);
         return buildSuccessResult("成功进入到抢红包队列");
       } else {
         // 抢红包失败
@@ -135,39 +140,53 @@ public class RedPacketServiceImpl extends BaseService implements IRedPacketServi
 
     // 24 小时未领取完 退回余额(24 小时后不再显示流水)
     RedisConnection connection = null;
+
+    byte[] redPacketKey = getRedPacketKey(redPacketId);
+
     try {
+      // 加入redis watch 保证原子性 https://www.jianshu.com/p/361cb9cd13d5
+      // doxxx 非原子性操作 val = GET mykey;val = val + 1;SET mykey $val
       connection = RedisFactory.getConnection();
-      byte[] redpacketKey = getRedPacketQueueKey();
+      connection.watch(redPacketKey);
+      connection.multi();
       // 开始拆红包,查询红包,生成随机金额
       RedPacket redPacket = redPacketMapper.selectById(redPacketId);
-      double randMoney = 0;
-      if (connection.lLen(redpacketKey) > 1) {
-        // 生成红包金额,如果是最后一个红包则是剩余金额
-        randMoney = Double.parseDouble(
-            MoneyUtil.numberDown(MoneyUtil.nextDouble(0.01, redPacket.getRestMoney())));
-      } else {
-        randMoney = redPacket.getRestMoney();
-      }
+      if (redPacket.getRestMoney() > 0) {
+        double randMoney = 0;
+        if (connection.lLen(redPacketKey) != null && connection.lLen(redPacketKey) > 1) {
+          // 生成红包金额,如果是最后一个红包则是剩余金额(要求每个人至少0.01)
+          randMoney = Double.parseDouble(MoneyUtil.numberDown(MoneyUtil.nextDouble(0.01,
+              redPacket.getRestMoney() - (redPacket.getPacketSize() * 0.01))));
+        } else {
+          randMoney = redPacket.getRestMoney();
+        }
 
-      // 扣除余额,记录拆红包记录
-      RedPacket updateRedPacket = new RedPacket();
-      updateRedPacket.setId(redPacket.getId());
-      updateRedPacket.setRestMoney(redPacket.getRestMoney() - randMoney);
-      int ur = redPacketMapper.updateById(updateRedPacket);
-      if (ur > 0) {
-        RedPacketDetail detail = new RedPacketDetail();
-        detail.setMoney(randMoney);
-        detail.setOepnId(openId);
-        detail.setRedPacketId(redPacketId);
-        detail.setCreateDate(new Timestamp(System.currentTimeMillis()));
-        detail.setNickName(nickName);
-        int detailResult = redPacketDetailMapper.insert(detail);
-        if (detailResult > 0) {
-          // 提供实时领取记录
-          connection.rPush(getRedPacketDetailKey(redPacketId), BeanUtil.toByteArray(detail));
-
-          // todo 记录key 24小时后时效
-          return buildSuccessResult("恭喜您领取到红包:" + randMoney);
+        // 避免重复领取
+        RedPacketDetail queryDetail = new RedPacketDetail();
+        queryDetail.setRedPacketId(redPacketId);
+        queryDetail.setOepnId(openId);
+        if (redPacketDetailMapper.selectOne(queryDetail) == null) {
+          // 扣除余额,记录拆红包记录
+          RedPacket updateRedPacket = new RedPacket();
+          updateRedPacket.setId(redPacket.getId());
+          updateRedPacket.setRestMoney(redPacket.getRestMoney() - randMoney);
+          int ur = redPacketMapper.updateById(updateRedPacket);
+          if (ur > 0) {
+            RedPacketDetail detail = new RedPacketDetail();
+            detail.setMoney(randMoney);
+            detail.setOepnId(openId);
+            detail.setRedPacketId(redPacketId);
+            detail.setCreateDate(new Timestamp(System.currentTimeMillis()));
+            detail.setNickName(nickName);
+            int detailResult = redPacketDetailMapper.insert(detail);
+            if (detailResult > 0) {
+              // 提供实时领取记录
+              connection.rPush(getRedPacketDetailKey(redPacketId), BeanUtil.toByteArray(detail));
+              connection.exec();
+              // todo 记录key 24小时后时效
+              return buildSuccessResult("恭喜您领取到红包:" + randMoney);
+            }
+          }
         }
       }
 

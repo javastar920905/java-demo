@@ -2,11 +2,15 @@ package com.javastar920905.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.javastar920905.constant.CommonConstants;
+import com.javastar920905.listener.RedisSubscribeListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author ouzhx on 2018/3/7.
  */
 public interface IBaseService {
+  Logger LOGGER = LoggerFactory.getLogger(IBaseService.class);
   String MSG = CommonConstants.key.msg.name();
   String RESULT = CommonConstants.key.result.name();
   String DATA = CommonConstants.key.data.name();

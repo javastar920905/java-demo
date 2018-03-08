@@ -1,11 +1,14 @@
 package com.javastar920905.config;
 
+import com.javastar920905.listener.RedisSubscribeListener;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
+import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import redis.clients.jedis.JedisPoolConfig;
 
 /**
@@ -13,6 +16,8 @@ import redis.clients.jedis.JedisPoolConfig;
  */
 @Configuration
 public class RedisConfig {
+  public static final String CHANNEL_TOPIC_RED_PACKET = "redPacket";
+
   @Bean
   public JedisPoolConfig jedisPoolConfig() {
     JedisPoolConfig config = new JedisPoolConfig();
@@ -39,5 +44,19 @@ public class RedisConfig {
         context.getBean("jedisConnectionFactory", JedisConnectionFactory.class));
     return template;
   }
+
+  /** 订阅发布 **/
+  @Bean
+  public RedisMessageListenerContainer messageListenerContainer(ApplicationContext context) {
+    RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+    container.setConnectionFactory(
+        context.getBean("jedisConnectionFactory", JedisConnectionFactory.class));
+
+    // 使用当前Listener 监听 redPacket 频道
+    ChannelTopic topic = new ChannelTopic(CHANNEL_TOPIC_RED_PACKET);
+    container.addMessageListener(new RedisSubscribeListener(), topic);
+    return container;
+  }
+
 
 }

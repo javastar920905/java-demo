@@ -20,17 +20,20 @@ public interface CommonConstants {
     msg, result, data
   }
 
+
+  /**
+   * 使用方式 Charset.utf8.value (输出:utf-8); Charset.utf8.name() (输出:utf8)
+   */
   @Getter
   enum Charset {
-    utf8("", "utf-8"), gbk("", "gbk");
-    private String name;
-    private String value;
+    utf8("utf-8"), gbk("gbk");
+    public String value;
 
-    Charset(String name, String value) {
-      this.name = name;
+    Charset(String value) {
       this.value = value;
     }
   }
+
 
   @Getter
   enum DateForm {

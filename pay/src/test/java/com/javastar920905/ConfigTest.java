@@ -3,6 +3,7 @@ package com.javastar920905;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -29,13 +30,7 @@ public class ConfigTest {
     context = new AnnotationConfigApplicationContext(MybatisConfig.class);
   }
 
-  /**
-   * 发红包接口测试
-   *
-   */
-  String redPacketId = "testRedPacketId1";
 
-  // String redPacketId=StringUtil.generateUUID();
   @Test
   public void giveRedPacketTest() {
     IRedPacketService service = context.getBean(IRedPacketService.class);
@@ -56,14 +51,22 @@ public class ConfigTest {
   }
 
   /**
+   * 发红包接口测试
+   *
+   */
+  String redPacketId = "testRedPacketId14";
+  // String redPacketId=StringUtil.generateUUID();
+
+  /**
    * 多线程模拟抢红包
    */
   @Test
-  public void oepnRedPacketTest() {
+  public void bookingRedPacketTest() {
+    giveRedPacketTest();
     IRedPacketService service = context.getBean(IRedPacketService.class);
 
 
-    int threadNums = 200;
+    int threadNums = 10;
     CountDownLatch countDownLatch = new CountDownLatch(threadNums);
     for (int i = 0; i < threadNums; i++) {
       new Thread(() -> {
@@ -76,9 +79,11 @@ public class ConfigTest {
 
     try {
       countDownLatch.await();
+      TimeUnit.SECONDS.sleep(60 * 2);
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
+
 
 
   }

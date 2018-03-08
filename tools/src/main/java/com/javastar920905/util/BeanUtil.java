@@ -5,6 +5,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author ouzhx on 2018/3/7.
@@ -52,5 +54,16 @@ public class BeanUtil {
       ex.printStackTrace();
     }
     return obj;
+  }
+
+  public static List<String> toListString(List<byte[]> list) {
+    if (list != null) {
+      List<String> list1 = new ArrayList<>(list.size());
+      list.stream().forEach(byteObj -> {
+        list1.add(String.valueOf(toObject(byteObj)));
+      });
+      return list1;
+    }
+    return null;
   }
 }

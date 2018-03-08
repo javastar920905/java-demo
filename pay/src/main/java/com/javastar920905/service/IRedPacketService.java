@@ -14,6 +14,7 @@ public interface IRedPacketService extends IBaseService {
   /** 红包后缀 **/
   String REDIS_KEY_RED_PACKET_SUFFIX_SIZE = ":size";
   String REDIS_KEY_RED_PACKET_SUFFIX_DETAIL = ":detail";
+  String REDIS_KEY_RED_PACKET_SUFFIX_QUEUE = ":queue";
 
   /**
    * 获取红包库存key
@@ -52,8 +53,9 @@ public interface IRedPacketService extends IBaseService {
    *
    * @return
    */
-  default byte[] getRedPacketQueueKey() {
-    return (REDIS_KEY_RED_PACKET_PREFIX + "queue").getBytes();
+  default byte[] getRedPacketQueueKey(String redPacketId) {
+    return (REDIS_KEY_RED_PACKET_PREFIX + redPacketId + REDIS_KEY_RED_PACKET_SUFFIX_QUEUE)
+        .getBytes();
   }
 
   /**

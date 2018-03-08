@@ -30,6 +30,20 @@ public class SpringContextUtil implements ApplicationContextAware {
     return applicationContext;
   }
 
+
+  /**
+   * 获取bean
+   * 
+   * @param requiredType bean类型
+   * @param <T>
+   * @return
+   * @throws BeansException
+   */
+  public static <T> T getBean(Class<T> requiredType) throws BeansException {
+    return applicationContext.getBean(requiredType);
+  }
+
+
   /**
    * 获取对象
    * 
