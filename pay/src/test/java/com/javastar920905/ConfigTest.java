@@ -6,7 +6,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
@@ -38,10 +37,10 @@ public class ConfigTest {
 
     // 发红包
     RedPacket redPacket = new RedPacket();
-    redPacket.setPacketSize(5);
+    redPacket.setPacketSize(10);
     redPacket.setId(redPacketId);
     redPacket.setUserId("ouzhx");
-    redPacket.setMoney(5d);
+    redPacket.setMoney(1d);
     redPacket.setCreateDate(new Timestamp(System.currentTimeMillis()));
     redPacket.setExpireTime(new Timestamp(System.currentTimeMillis() + 1000000000));
     try {
@@ -58,7 +57,7 @@ public class ConfigTest {
    * 发红包接口测试
    *
    */
-  String redPacketId = "testRedPacketId37";
+  String redPacketId = "testRedPacketId42";
 
   /**
    * 多线程模拟抢红包
@@ -69,12 +68,12 @@ public class ConfigTest {
     IRedPacketService service = context.getBean(IRedPacketService.class);
 
 
-    int threadNums = 100;
+    int threadNums = 10;
     CountDownLatch countDownLatch = new CountDownLatch(threadNums);
     for (int i = 0; i < threadNums; i++) {
+      final String uid = "" + i;
       new Thread(() -> {
-        JSONObject jsonObject =
-            service.bookingRedPacket(StringUtil.generateUUID(), "欧besos", redPacketId);
+        JSONObject jsonObject = service.bookingRedPacket(uid, "欧besos" + uid, redPacketId);
 
         System.out.println(jsonObject.toJSONString());
         countDownLatch.countDown();

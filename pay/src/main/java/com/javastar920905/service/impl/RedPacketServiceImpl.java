@@ -47,7 +47,7 @@ public class RedPacketServiceImpl extends BaseService implements IRedPacketServi
     RLock lock = null;
     RedissonClient redissonClient = SpringContextUtil.getBean(RedissonClient.class);
     lock = redissonClient.getLock("oepnRedPacket:lock");
-    if (lock.tryLock(5, TimeUnit.SECONDS)) {
+    if (lock.tryLock(1, 5, TimeUnit.SECONDS)) {
       redPacket.setRestMoney(redPacket.getMoney());
       int result = redPacketMapper.insertAllColumn(redPacket);
       if (result > 0) {
@@ -160,7 +160,8 @@ public class RedPacketServiceImpl extends BaseService implements IRedPacketServi
       // 1 加入分布式锁,保证操作原子性
       RedissonClient redissonClient = SpringContextUtil.getBean(RedissonClient.class);
       lock = redissonClient.getLock("oepnRedPacket:lock");
-      if (lock.tryLock(5, TimeUnit.SECONDS)) {
+      /// 尝试加锁，最多等待1秒，上锁以后5秒自动解锁
+      if (lock.tryLock(5, 3, TimeUnit.SECONDS)) {
         // 红包库存key
         byte[] redPacketKey = getRedPacketKey(redPacketId);
         // 剩余红包数key
