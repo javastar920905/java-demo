@@ -33,7 +33,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 // todo 扫描首页mapper 接口,该包下面的mapper接口都不需要@mapper标识了
 @MapperScan("com.javastar920905.mapper")
 @EnableTransactionManagement
-@Import({RedisConfig.class, PropertiesConfig.class})
+@Import({RedisConfig.class, PropertiesConfig.class, RabbitConfig.class})
 public class MybatisConfig {
 
 

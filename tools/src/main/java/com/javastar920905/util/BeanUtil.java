@@ -60,7 +60,7 @@ public class BeanUtil {
     if (list != null) {
       List<String> list1 = new ArrayList<>(list.size());
       list.stream().forEach(byteObj -> {
-        list1.add(String.valueOf(toObject(byteObj)));
+        list1.add(new String(byteObj));
       });
       return list1;
     }

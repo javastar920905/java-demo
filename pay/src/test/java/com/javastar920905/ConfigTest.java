@@ -44,9 +44,13 @@ public class ConfigTest {
     redPacket.setMoney(5d);
     redPacket.setCreateDate(new Timestamp(System.currentTimeMillis()));
     redPacket.setExpireTime(new Timestamp(System.currentTimeMillis() + 1000000000));
-    JSONObject jsonObject = service.giveRedPacket(redPacket);
+    try {
+      JSONObject jsonObject = service.giveRedPacket(redPacket);
 
-    System.out.println(jsonObject.toJSONString());
+      System.out.println(jsonObject.toJSONString());
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
 
   }
 
@@ -54,8 +58,7 @@ public class ConfigTest {
    * 发红包接口测试
    *
    */
-  String redPacketId = "testRedPacketId14";
-  // String redPacketId=StringUtil.generateUUID();
+  String redPacketId = "testRedPacketId37";
 
   /**
    * 多线程模拟抢红包
@@ -66,11 +69,12 @@ public class ConfigTest {
     IRedPacketService service = context.getBean(IRedPacketService.class);
 
 
-    int threadNums = 10;
+    int threadNums = 100;
     CountDownLatch countDownLatch = new CountDownLatch(threadNums);
     for (int i = 0; i < threadNums; i++) {
       new Thread(() -> {
-        JSONObject jsonObject = service.bookingRedPacket("wecht_open_id", "欧besos", redPacketId);
+        JSONObject jsonObject =
+            service.bookingRedPacket(StringUtil.generateUUID(), "欧besos", redPacketId);
 
         System.out.println(jsonObject.toJSONString());
         countDownLatch.countDown();
@@ -79,6 +83,8 @@ public class ConfigTest {
 
     try {
       countDownLatch.await();
+
+      // 给消费队列留时间
       TimeUnit.SECONDS.sleep(60 * 2);
     } catch (InterruptedException e) {
       e.printStackTrace();

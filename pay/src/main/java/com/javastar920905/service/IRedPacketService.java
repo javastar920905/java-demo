@@ -63,7 +63,7 @@ public interface IRedPacketService extends IBaseService {
    * 
    * @return
    */
-  JSONObject giveRedPacket(RedPacket redPacket);
+  JSONObject giveRedPacket(RedPacket redPacket) throws Exception;
 
 
   /**

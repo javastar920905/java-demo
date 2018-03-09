@@ -1,16 +1,14 @@
 version = "1.0"
 
-jar{
+jar {
     archiveName = 'tools.jar'
 }
 ext {
     poiVersion = "3.9"
-    springVersion = "4.3.2.RELEASE"
+    //其他版本号都定义在主项目 build.gradle
 }
 
 dependencies {
-
-
     compile 'cn.hutool:hutool-all:4.0.6'
 
     //工具类依赖
@@ -31,6 +29,10 @@ dependencies {
     //spring mail支持
     compile("org.springframework:spring-context-support:${springVersion}")
     compile("org.springframework.session:spring-session-data-redis:1.2.1.RELEASE")
+    //分布式锁实现(依赖了tools项目的都不再需要引入当前依赖)
+    compile("org.redisson:redisson:3.5.0")
+    compile("com.rabbitmq:amqp-client:${rabbitmqVersion}")
+    compile("org.springframework.amqp:spring-rabbit:1.7.1.RELEASE")
 }
 
 

@@ -1,6 +1,10 @@
 package com.javastar920905.config;
 
 import com.javastar920905.listener.RedisSubscribeListener;
+import org.redisson.Redisson;
+import org.redisson.api.RedissonClient;
+import org.redisson.config.Config;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -58,5 +62,17 @@ public class RedisConfig {
     return container;
   }
 
-
+  /**
+   * 分布式锁实现
+   * 
+   * @return
+   */
+  @Bean
+  public RedissonClient redissonClient() {
+    Config config = new Config();
+    config.useSingleServer().setAddress(
+        String.format("redis://%s:6379", PropertiesConfig.properties.getProperty("redis.host")));
+    RedissonClient client = Redisson.create(config);
+    return client;
+  }
 }
