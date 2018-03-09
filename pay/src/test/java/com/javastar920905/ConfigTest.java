@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import com.javastar920905.outer.spring.SpringContextUtil;
+import com.javastar920905.service.impl.RedPacketServiceImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -57,15 +59,15 @@ public class ConfigTest {
    * 发红包接口测试
    *
    */
-  String redPacketId = "testRedPacketId42";
+  String redPacketId = "testRedPacketId55";
 
   /**
-   * 多线程模拟抢红包
+   * 秒杀实现1 测试 (余额超时退还 依赖度较高) 多线程模拟抢红包 (使用库存方式和加锁方式处理)
    */
   @Test
   public void bookingRedPacketTest() {
     giveRedPacketTest();
-    IRedPacketService service = context.getBean(IRedPacketService.class);
+    IRedPacketService service = (IRedPacketService) context.getBean("redPacketService");
 
 
     int threadNums = 10;
@@ -73,9 +75,8 @@ public class ConfigTest {
     for (int i = 0; i < threadNums; i++) {
       final String uid = "" + i;
       new Thread(() -> {
-        JSONObject jsonObject = service.bookingRedPacket(uid, "欧besos" + uid, redPacketId);
+        service.bookingRedPacket(uid, "欧besos" + uid, redPacketId);
 
-        System.out.println(jsonObject.toJSONString());
         countDownLatch.countDown();
       }).start();
     }
@@ -85,6 +86,38 @@ public class ConfigTest {
 
       // 给消费队列留时间
       TimeUnit.SECONDS.sleep(60 * 2);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+
+
+
+  }
+
+  /**
+   * 秒杀实现2 测试
+   */
+  @Test
+  public void bookingRedPacket2Test() {
+    giveRedPacketTest();
+    IRedPacketService service = context.getBean(IRedPacketService.class);
+
+    int threadNums = 15;
+    CountDownLatch countDownLatch = new CountDownLatch(threadNums);
+    for (int i = 0; i < threadNums; i++) {
+      final String uid = "" + i;
+      new Thread(() -> {
+        service.bookingRedPacket2WithDoubleQuque(uid, "欧besos" + uid, redPacketId);
+
+        countDownLatch.countDown();
+      }).start();
+    }
+
+    try {
+      countDownLatch.await();
+
+      // 给消费队列留时间
+      TimeUnit.SECONDS.sleep(60 * 1);
     } catch (InterruptedException e) {
       e.printStackTrace();
     }

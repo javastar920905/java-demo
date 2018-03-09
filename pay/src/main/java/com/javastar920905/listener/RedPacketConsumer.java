@@ -40,4 +40,24 @@ public class RedPacketConsumer {
       LOGGER.warn("队列消费失败库存信息" + msg);
     }
   }
+
+
+  @RabbitListener(
+      bindings = @QueueBinding(
+          value = @Queue(value = RabbitConfig.QUQUE_REDPACKET, durable = "true"),
+          exchange = @Exchange(value = RabbitConfig.DEFAULT_EXCHAGE, type = "topic",
+              durable = "true", ignoreDeclarationExceptions = "true"),
+          key = RabbitConfig.ROUTE_KEY_REDPACKET_2))
+  public void handleMessage2(String msg) {
+    LOGGER.info("来自消息队列2 " + msg);
+    JSONObject json = JSONObject.parseObject(msg);
+    try {
+      IRedPacketService redPacketService = SpringContextUtil.getBean(IRedPacketService.class);
+      JSONObject result = redPacketService.oepnRedPacket2WithDoubleQuque(json.getString("openId"),
+          json.getString("nickName"), json.getString("redPacketId"));
+      LOGGER.info(result.toJSONString());
+    } catch (BeansException e) {
+      LOGGER.warn("队列消费失败库存信息" + msg);
+    }
+  }
 }

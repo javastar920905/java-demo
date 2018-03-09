@@ -28,7 +28,10 @@ import com.javastar920905.outer.spring.mq.RabbitMessageProducer;
 public class RabbitConfig {
   public static final String DEFAULT_EXCHAGE = "defaultexchage";
   public static final String QUQUE_REDPACKET = "redPacket";
+  // 秒杀实现1
   public static final String ROUTE_KEY_REDPACKET = "redPacketRoute";
+  // 秒杀实现2
+  public static final String ROUTE_KEY_REDPACKET_2 = "redPacketRoute2";
 
   /*
    * @Bean public ConnectionFactory rabbitConnectionFactory(@Value("${rabbitmq.host}") String host,
