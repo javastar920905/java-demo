@@ -1,9 +1,7 @@
-package com.javastar920905.service.impl;
+package com.javastar920905.service.pay;
 
 import com.javastar920905.mapper.RedPacketDetailMapper;
 import com.javastar920905.mapper.RedPacketMapper;
-import com.javastar920905.outer.spring.SpringContextUtil;
-import com.javastar920905.outer.spring.mq.RabbitMessageProducer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

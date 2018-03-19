@@ -155,8 +155,4 @@ public class ConfigTest {
     result = userMapper.deleteById(user.getId());
 
   }
-  /**
-   * 用户接口测试
-   *
-   */
 }

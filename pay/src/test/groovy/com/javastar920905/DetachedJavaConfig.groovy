@@ -1,19 +1,18 @@
 package com.javastar920905
 
-import com.javastar920905.config.MybatisConfig
+import com.javastar920905.config.RabbitConfig
 import com.javastar920905.config.RedisConfig
 import com.javastar920905.mapper.RedPacketDetailMapper
 import com.javastar920905.mapper.RedPacketMapper
-import com.javastar920905.outer.redis.RedisFactory
-import com.javastar920905.service.impl.RedPacketServiceImpl
 import com.javastar920905.service.pay.IRedPacketService
+import com.javastar920905.service.pay.RedPacketServiceImpl
 import org.spockframework.spring.xml.SpockMockFactoryBean
 import org.springframework.beans.factory.FactoryBean
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Import
+import org.springframework.context.annotation.FilterType
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.support.AnnotationConfigContextLoader
 import spock.lang.Specification
@@ -146,49 +145,10 @@ import spock.mock.DetachedMockFactory
   // 8 spring 集成 http://spockframework.org/spock/docs/1.1/all_in_one.html#_spring_module
 
  */
-@ContextConfiguration(classes = MybatisConfig.class)
+@ContextConfiguration(loader = AnnotationConfigContextLoader, classes = [RedisConfig.class, RabbitConfig.class, BeanConfig.class])
 class DetachedJavaConfig extends Specification {
-    //DetachedMockFactory and the SpockMockFactoryBean spring 集成提供的对象
-
-    @Configuration
-    static class ServiceConfig {
-        def mockFactory = new DetachedMockFactory()
-
-        @Bean
-        IRedPacketService redPacketServiceSpy() {
-            return mockFactory.Spy(RedPacketServiceImpl)
-        }
-
-        @Bean
-        RedPacketMapper redPacketMapperMock() {
-            return mockFactory.Mock(RedPacketMapper)
-        }
-
-        @Bean
-        RedPacketDetailMapper redPacketDetailMapperMock() {
-            return mockFactory.Mock(RedPacketDetailMapper)
-        }
-
-        /* @Bean
-         IRedPacketService redPacketServiceMock() {
-             return mockFactory.Mock(IRedPacketService)
-         }
-
-         @Bean
-         IRedPacketService redPacketServiceStub() {
-             return mockFactory.Stub(IRedPacketService)
-         }
-
-         @Bean
-         FactoryBean<IRedPacketService> alternativeMock() {
-             return new SpockMockFactoryBean(IRedPacketService)
-         }*/
-    }
-
-
     @Autowired
     IRedPacketService redPacketServiceSpy
     @Autowired
-    RedPacketMapper redPacketMapperMock
-
+    RedPacketMapper redPacketMapper
 }

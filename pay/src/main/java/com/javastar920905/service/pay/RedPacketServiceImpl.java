@@ -1,11 +1,10 @@
-package com.javastar920905.service.impl;
+package com.javastar920905.service.pay;
 
 import java.sql.Timestamp;
 import java.util.concurrent.TimeUnit;
 
 import com.javastar920905.config.RabbitConfig;
 import com.javastar920905.outer.spring.mq.RabbitMessageProducer;
-import com.javastar920905.service.pay.IRedPacketService;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.dao.DataAccessException;
@@ -27,7 +26,7 @@ import com.javastar920905.util.MoneyUtil;
 /**
  * @author ouzhx on 2018/3/7.
  */
-@Service("redPacketService")
+@Service
 public class RedPacketServiceImpl extends BaseService implements IRedPacketService {
 
   /**
@@ -47,7 +46,7 @@ public class RedPacketServiceImpl extends BaseService implements IRedPacketServi
     lock = redissonClient.getLock("oepnRedPacket:lock");
     if (lock.tryLock(1, 5, TimeUnit.SECONDS)) {
       redPacket.setRestMoney(redPacket.getMoney());
-      int result = redPacketMapper.insertAllColumn(redPacket);
+      Integer result = redPacketMapper.insertAllColumn(redPacket);
       if (result > 0) {
         // 2 todo 调用微信支付api,下红包订单,等待微信回调
         int orderStatu = 1;

@@ -4,13 +4,11 @@ import com.alibaba.fastjson.JSONObject
 import com.javastar920905.constant.CommonConstants
 import com.javastar920905.entity.domain.RedPacket
 import com.javastar920905.outer.redis.RedisFactory
-import com.javastar920905.util.ByteUtil
 import org.springframework.data.redis.connection.RedisConnection
 
 import java.sql.Timestamp
 
 /**
- * 需要新建groovy class
  * @author ouzhx on 2018/3/19.
  */
 class RedPacketSpecification extends DetachedJavaConfig {
@@ -19,7 +17,6 @@ class RedPacketSpecification extends DetachedJavaConfig {
     def setup() {
         connection = RedisFactory.getConnection()
         assert connection != null
-        connection.expire("redPacket".getBytes(), 0l)
     }
 
 
@@ -31,6 +28,9 @@ class RedPacketSpecification extends DetachedJavaConfig {
 
     def "发红包功能测试"() {
         given: "设置红包信息(金额,数目等)"
+        // "确认redis中没有脏数据"
+        connection.del(redPacketServiceSpy.getRedPacketKey(id), redPacketServiceSpy.getRedPacketSizeKey(id))
+        assert connection.exists(redPacketServiceSpy.getRedPacketKey(id)) == false
         RedPacket redPacket = new RedPacket()
         redPacket.setPacketSize(size)
         redPacket.setId(id)
@@ -39,21 +39,18 @@ class RedPacketSpecification extends DetachedJavaConfig {
         redPacket.setCreateDate(createDate)
         redPacket.setExpireTime(expireTime)
 
-        //打桩 stub
-        redPacketMapperMock.insertAllColumn(_) >> 1
-        1 * redPacketMapperMock.updateById(_) >> 1
 
 
         when: "发送红包"
         JSONObject jsonObject = redPacketServiceSpy.giveRedPacket(redPacket)
 
         then: "发送红包成功,生成库存信息!"
-        1 * redPacketMapperMock.insertAllColumn(_)
-        1 * redPacketMapperMock.updateById(_)
-        def redisSize = ByteUtil.getInt(connection.get(redPacketServiceMock.getRedPacketSizeKey(id)));
+        //mock打桩 stub  以及验证调用次数
+        1 * redPacketMapper.insertAllColumn(_) >> 1
+        1 * redPacketMapper.updateById(_) >> 1
+        assert connection.get(redPacketServiceSpy.getRedPacketSizeKey(redPacket.getId())) != null
+        assert connection.lLen(redPacketServiceSpy.getRedPacketKey(redPacket.getId())) == size
         assert jsonObject.getBoolean(CommonConstants.key.result.name()) == true
-        assert redisSize == size
-        assert ByteUtil.getInt(connection.lLen(redPacketServiceMock.getRedPacketKey(id))) == size
 
 
         where: "给出以下红包信息"
@@ -61,4 +58,6 @@ class RedPacketSpecification extends DetachedJavaConfig {
         10   | "1" | "ouzhx" | 10d   | new Timestamp(System.currentTimeMillis()) | new Timestamp(System.currentTimeMillis() + 1000000000)
         5    | "2" | "ouzhx" | 5d    | new Timestamp(System.currentTimeMillis()) | new Timestamp(System.currentTimeMillis() + 1000000000)
     }
+
+
 }
