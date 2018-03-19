@@ -1,0 +1,13 @@
+version = "1.0"
+
+jar {
+    archiveName = 'api.jar'
+}
+
+
+dependencies {
+    compile project(':tools')
+    compile project(":entity")
+}
+
+

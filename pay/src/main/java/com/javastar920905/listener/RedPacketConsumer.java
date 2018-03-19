@@ -2,7 +2,7 @@ package com.javastar920905.listener;
 
 import com.alibaba.fastjson.JSONObject;
 import com.javastar920905.outer.spring.SpringContextUtil;
-import com.javastar920905.service.IRedPacketService;
+import com.javastar920905.service.pay.IRedPacketService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.Exchange;

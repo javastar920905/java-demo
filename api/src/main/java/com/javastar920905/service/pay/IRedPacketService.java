@@ -1,4 +1,4 @@
-package com.javastar920905.service;
+package com.javastar920905.service.pay;
 
 import com.alibaba.fastjson.JSONObject;
 import com.javastar920905.entity.domain.RedPacket;
@@ -97,7 +97,7 @@ public interface IRedPacketService extends IBaseService {
    * 
    * @return
    */
-  public JSONObject bookingRedPacket2WithDoubleQuque(String openId, String nickName,
+   JSONObject bookingRedPacket2WithDoubleQuque(String openId, String nickName,
       String redPacketId);
 
   /**
@@ -108,7 +108,7 @@ public interface IRedPacketService extends IBaseService {
    * @param redPacketId
    * @return
    */
-  public JSONObject oepnRedPacket2WithDoubleQuque(String openId, String nickName,
+   JSONObject oepnRedPacket2WithDoubleQuque(String openId, String nickName,
       String redPacketId);
     //</editor-fold>
 }

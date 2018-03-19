@@ -10,6 +10,9 @@
     web     (spring boot项目)
     web2-sso    (spring boot项目  使用spring session 实现和web项目统一分享session )
     xf-voice    (讯飞和百度语音合成demo )
+## 单元测试
+--
+http://note.youdao.com/noteshare?id=227ac19ff656c61504703b3f20f04837 (优先推荐spock单元测试)
 
 
 java 8示例代码是写在test目录下的(为了方便单元测试)

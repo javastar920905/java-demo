@@ -44,6 +44,7 @@ public class RabbitConfig {
    */
   @Bean
   public ConnectionFactory rabbitConnectionFactory() {
+    // TODO
     CachingConnectionFactory connectionFactory = new CachingConnectionFactory("39.106.115.236");
     connectionFactory.setPort(Integer.valueOf(443));
 

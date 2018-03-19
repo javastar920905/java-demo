@@ -6,8 +6,7 @@ jar {
 
 
 dependencies {
-    compile project(':tools')
-    compile project(':entity')
+    compile project(':api')
 
     //持久层依赖 mybatis plus
     compile("mysql:mysql-connector-java:5.1.35")

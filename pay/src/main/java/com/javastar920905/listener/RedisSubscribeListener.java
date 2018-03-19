@@ -7,12 +7,11 @@ import java.io.UnsupportedEncodingException;
 
 import com.javastar920905.constant.CommonConstants;
 import com.javastar920905.outer.spring.SpringContextUtil;
-import com.javastar920905.service.IRedPacketService;
+import com.javastar920905.service.pay.IRedPacketService;
 import com.javastar920905.util.BeanUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.stereotype.Component;
