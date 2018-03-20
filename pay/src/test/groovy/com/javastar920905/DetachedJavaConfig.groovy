@@ -2,21 +2,12 @@ package com.javastar920905
 
 import com.javastar920905.config.RabbitConfig
 import com.javastar920905.config.RedisConfig
-import com.javastar920905.mapper.RedPacketDetailMapper
 import com.javastar920905.mapper.RedPacketMapper
 import com.javastar920905.service.pay.IRedPacketService
-import com.javastar920905.service.pay.RedPacketServiceImpl
-import org.spockframework.spring.xml.SpockMockFactoryBean
-import org.springframework.beans.factory.FactoryBean
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.ComponentScan
-import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.FilterType
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.support.AnnotationConfigContextLoader
 import spock.lang.Specification
-import spock.mock.DetachedMockFactory
 
 /**
  * @author ouzhx on 2018/3/19.
@@ -77,14 +68,18 @@ import spock.mock.DetachedMockFactory
   a << [5, 3]
   b << [1, 9]
   c << [5, 9]
-  }//4 Helper Methods http://spockframework.org/spock/docs/1.1/all_in_one.html#_helper_methods
+  }
+
+  //4 Helper Methods http://spockframework.org/spock/docs/1.1/all_in_one.html#_helper_methods
   -- with 的使用
   with(pc) {
   vendor == "Sunny"
   clockRate >= 2333
   ram >= 406
   os == "Linux"
-  }//5 扩展
+  }
+
+  //5 扩展
   --   @Timeout Sets a timeout for execution of a feature or fixture method.
   --   @Ignore Ignores a feature method.
   --   @IgnoreRest Ignores all feature methods not carrying this annotation. Useful for quickly running just a single method.
@@ -107,6 +102,7 @@ import spock.mock.DetachedMockFactory
   c << [3, 7, 0]
 
   //7 交互测试 http://spockframework.org/spock/docs/1.1/all_in_one.html#_interaction_based_testing
+  -- 一般在then: 代码块后面(也可能用在when前面,如setup:中)
   -- mock  方法调用次数...
   -- MockingApi.Mock() 以下都可以创建mock对象
   def subscriber = Mock(Subscriber)
@@ -115,40 +111,51 @@ import spock.mock.DetachedMockFactory
   --
   1 * subscriber.receive("hello")
   |   |          |       |
-  |   |          |       argument constraint
-  |   |          method constraint
-  |   target constraint
-  cardinality
+  |   |          |       argument constraint 参数约束
+  |   |          method constraint 方法约束
+  |   target constraint 调用者约束
+  cardinality 基数
+
 
   --基数判断
-  1 * subscriber.receive("hello")      // exactly one call
-  0 * subscriber.receive("hello")      // zero calls
-  (1..3) * subscriber.receive("hello") // between one and three calls (inclusive)
-  (1.._) * subscriber.receive("hello") // at least one call
-  (_..3) * subscriber.receive("hello") // at most three calls
-  _ * subscriber.receive("hello")      // any number of calls, including zero   (rarely needed; see 'Strict Mocking')
+  1 * subscriber.receive("hello")      // exactly one call,精确1次调用
+  0 * subscriber.receive("hello")      // zero calls  0次调用
+  (1..3) * subscriber.receive("hello") // between one and three calls (inclusive) 调用1-3次
+  (1.._) * subscriber.receive("hello") // at least one call  至少一次调用
+  (_..3) * subscriber.receive("hello") // at most three calls 最多3次调用
+  _ * subscriber.receive("hello")      // any number of calls, including zero   调用任意次数(rarely needed; see 'Strict Mocking')
 
   --调用方法目标交互
   1 * subscriber.receive("hello") // a call to 'subscriber'
   1 * _.receive("hello")          // a call to any mock object
 
   --参数交互
-  1 * subscriber.receive("hello")     // an argument that is equal to the String "hello"
-  1 * subscriber.receive(!"hello")    // an argument that is unequal to the String "hello"
-  1 * subscriber.receive()            // the empty argument list (would never match in our example)
-  1 * subscriber.receive(_)           // any single argument (including null)
-  1 * subscriber.receive(*_)          // any argument list (including the empty argument list)
-  1 * subscriber.receive(!null)       // any non-null argument
+  1 * subscriber.receive("hello")     // an argument that is equal to the String "hello"  参数必须是"hello"
+  1 * subscriber.receive(!"hello")    // an argument that is unequal to the String "hello" 参数必须不是"hello"
+  1 * subscriber.receive()            // the empty argument list (would never match in our example)  空参数
+  1 * subscriber.receive(_)           // any single argument (including null) 任意单个参数
+  1 * subscriber.receive(*_)          // any argument list (including the empty argument list) 任意参数个数
+  1 * subscriber.receive(!null)       // any non-null argument 非空参数
   1 * subscriber.receive(_ as String) // any non-null argument that is-a String
   1 * subscriber.receive({ it.size() > 3 }) // an argument that satisfies the given predicate  (here: message length is greater than 3)
+
+
+  --stubbing 打桩
+  --根据参数计算结果返回不同值
+  subscriber.receive(_) >> { args -> args[0].size() > 3 ? "ok" : "fail" }
+  -- 不同调用次数返回不同数据 chain链式响应
+  subscriber.receive(_) >>> ["ok", "fail", "ok"] >> { throw new InternalError() } >> "ok"
+  前3次调用分别返回 "ok","fail","ok", 第4次抛出异常,其他任何调用都返回"ok"
 
   // 8 spring 集成 http://spockframework.org/spock/docs/1.1/all_in_one.html#_spring_module
 
  */
 @ContextConfiguration(loader = AnnotationConfigContextLoader, classes = [RedisConfig.class, RabbitConfig.class, BeanConfig.class])
 class DetachedJavaConfig extends Specification {
+    //使用spy对象前请三思(think twice before doing sth),基于真实对象
     @Autowired
     IRedPacketService redPacketServiceSpy
     @Autowired
-    RedPacketMapper redPacketMapper
+    RedPacketMapper redPacketMapperMock
+
 }
