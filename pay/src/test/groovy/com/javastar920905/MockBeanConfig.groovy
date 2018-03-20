@@ -27,7 +27,7 @@ import spock.mock.DetachedMockFactory
 @Configuration
 //(持久层都是mock对象可以不扫描)
 @ComponentScan(value = "com.javastar920905", excludeFilters = @ComponentScan.Filter(type = FilterType.ANNOTATION, value = Configuration.class))
-class BeanConfig {
+class MockBeanConfig {
     // DetachedMockFactory and the SpockMockFactoryBean spring 集成提供的对象
     def mockFactory = new DetachedMockFactory()
 

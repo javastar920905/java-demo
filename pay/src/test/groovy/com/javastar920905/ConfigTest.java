@@ -6,6 +6,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import com.javastar920905.service.pay.IRedPacketService;
+import com.javastar920905.util.BeanUtil;
+import com.javastar920905.util.ByteUtil;
+import com.javastar920905.util.MoneyUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -155,4 +158,5 @@ public class ConfigTest {
     result = userMapper.deleteById(user.getId());
 
   }
+
 }

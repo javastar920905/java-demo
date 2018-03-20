@@ -78,12 +78,10 @@ public class RedPacketServiceImpl extends BaseService implements IRedPacketServi
             return buildSuccessResult(
                 "发送红包成功!" + JSONUtil.parseObjectToJSONObject(redPacket, null).toJSONString());
           } else {
-            lock.unlock();
             return buildfailResult("已扣款,但是生成红包信息失败");
           }
         } else {
           // 记录异常日志信息
-          lock.unlock();
           return buildfailResult("微信支付接口异常!");
         }
       } else {
@@ -294,62 +292,76 @@ public class RedPacketServiceImpl extends BaseService implements IRedPacketServi
 
       // 1 因为列表的pop操作是原子的，即使有很多用户同时到达，也是依次执行的 (但是没有避免重复消费问题,可以在打开红包那里处理)
       if (connection.lPop(getRedPacketQueueKey(redPacketId)) != null) {
-        // 红包库存key
-        byte[] redPacketKey = getRedPacketKey(redPacketId);
-        // 剩余红包数key
-        byte[] redPacketSizeKey = getRedPacketSizeKey(redPacketId);
+        RLock lock = null;
+        RedissonClient redissonClient = SpringContextUtil.getBean(RedissonClient.class);
+        lock = redissonClient.getLock("oepnRedPacket:lock");
+        // 此处要添加锁 保证操作原子性,否则会出现消费金额大于红包金额情况
+        if (lock.tryLock(1, 5, TimeUnit.SECONDS)) {
+          // 红包库存key
+          byte[] redPacketKey = getRedPacketKey(redPacketId);
+          // 剩余红包数key
+          byte[] redPacketSizeKey = getRedPacketSizeKey(redPacketId);
 
 
-        RedPacketDetail queryDetail = new RedPacketDetail();
-        queryDetail.setRedPacketId(redPacketId);
-        queryDetail.setOepnId(openId);
-        if (redPacketDetailMapper.selectOne(queryDetail) != null) {
-          // 2 避免重复领取(处理重复消费问题),恢复一个库存
-          connection.rPush(redPacketKey, "1".getBytes());
-          return buildfailResult("您已经领取过该红包,不能重复领取.");
-        } else {
-          // 3 开始拆红包,查询红包,生成随机金额
-          RedPacket redPacket = redPacketMapper.selectById(redPacketId);
+          RedPacketDetail queryDetail = new RedPacketDetail();
+          queryDetail.setRedPacketId(redPacketId);
+          queryDetail.setOepnId(openId);
+          if (redPacketDetailMapper.selectOne(queryDetail) != null) {
+            // 2 避免重复领取(处理重复消费问题),恢复一个库存
+            connection.rPush(redPacketKey, "1".getBytes());
+            return buildfailResult("您已经领取过该红包,不能重复领取.");
+          } else {
+            // 3 开始拆红包,查询红包,生成随机金额
+            RedPacket redPacket = redPacketMapper.selectById(redPacketId);
 
-          // 4 避免超额消费
-          if (redPacket.getRestMoney() > 0) {
-            double randMoney = 0;
-            byte[] size = connection.get(redPacketSizeKey);
-            if (size != null && Integer.valueOf(ByteUtil.getString(size)) > 1) {
-              // 生成红包金额,如果是最后一个红包则是剩余金额(要求每个人至少0.01)
-              randMoney = Double.parseDouble(MoneyUtil.numberDown(MoneyUtil.nextDouble(0.01,
-                  redPacket.getRestMoney() - (redPacket.getPacketSize() * 0.01))));
-            } else {
-              randMoney = redPacket.getRestMoney();
-            }
+            // 4 避免超额消费
+            if (redPacket.getRestMoney() > 0) {
+              double randMoney = 0;
+              byte[] size = connection.get(redPacketSizeKey);
+              if (size != null) {
+                // 生成红包金额,如果是最后一个红包则是剩余金额(要求每个人至少0.01)
+                int restSize = Integer.valueOf(ByteUtil.getString(size));
+                if (restSize > 1) {
+                  randMoney = Double.parseDouble(MoneyUtil.numberDown(
+                      MoneyUtil.nextDouble(0.01, redPacket.getRestMoney() - (restSize * 0.01))));
+                } else {
+                  randMoney = redPacket.getRestMoney();
+                }
+              } else {
+                // 2 redis获取剩余红包数可能存在问题,恢复一个库存
+                connection.rPush(redPacketKey, "1".getBytes());
+                return buildfailResult("领取红包失败,刷新试试!");
+              }
 
-            // 5 扣除余额
-            RedPacket updateRedPacket = new RedPacket();
-            updateRedPacket.setId(redPacket.getId());
-            updateRedPacket.setRestMoney(redPacket.getRestMoney() - randMoney);
-            int ur = redPacketMapper.updateById(updateRedPacket);
-            if (ur > 0) {
-              // 6 记录拆红包记录
-              RedPacketDetail detail = new RedPacketDetail();
-              detail.setMoney(randMoney);
-              detail.setOepnId(openId);
-              detail.setRedPacketId(redPacketId);
-              detail.setCreateDate(new Timestamp(System.currentTimeMillis()));
-              detail.setNickName(nickName);
-              int detailResult = redPacketDetailMapper.insert(detail);
-              if (detailResult > 0) {
-                // 7 提供缓存实时领取记录
-                connection.rPush(getRedPacketDetailKey(redPacketId), BeanUtil.toByteArray(detail));
-                connection.decr(redPacketSizeKey);
-                // todo 记录key 24小时后时效(优化处理)
-                return buildSuccessResult("恭喜您领取到红包:" + randMoney);
+              // 5 扣除余额
+              RedPacket updateRedPacket = new RedPacket();
+              updateRedPacket.setId(redPacket.getId());
+              updateRedPacket.setRestMoney(redPacket.getRestMoney() - randMoney);
+              int ur = redPacketMapper.updateById(updateRedPacket);
+              if (ur > 0) {
+                // 6 记录拆红包记录
+                RedPacketDetail detail = new RedPacketDetail();
+                detail.setMoney(randMoney);
+                detail.setOepnId(openId);
+                detail.setRedPacketId(redPacketId);
+                detail.setCreateDate(new Timestamp(System.currentTimeMillis()));
+                detail.setNickName(nickName);
+                int detailResult = redPacketDetailMapper.insert(detail);
+                if (detailResult > 0) {
+                  // 7 提供缓存实时领取记录
+                  connection.rPush(getRedPacketDetailKey(redPacketId),
+                      BeanUtil.toByteArray(detail));
+                  connection.decr(redPacketSizeKey);
+                  // todo 记录key 24小时后失效(优化处理)
+                  lock.unlock();
+                  return buildSuccessResult("恭喜您领取到红包:" + randMoney);
+                }
               }
             }
           }
         }
       } else {
-        connection.rPush(getRedPacketKey(redPacketId), "1".getBytes());
-        return buildfailResult("加锁失败,恢复库存信息");
+        return buildfailResult("队列中没有排队抢红包用户");
       }
     } catch (Exception e) {
       e.printStackTrace();

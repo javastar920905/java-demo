@@ -1,10 +1,12 @@
 package com.javastar920905
 
-import com.javastar920905.config.RabbitConfig
-import com.javastar920905.config.RedisConfig
+import com.javastar920905.mapper.RedPacketDetailMapper
 import com.javastar920905.mapper.RedPacketMapper
+import com.javastar920905.outer.redis.RedisFactory
 import com.javastar920905.service.pay.IRedPacketService
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.redis.connection.RedisConnection
+import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.support.AnnotationConfigContextLoader
 import spock.lang.Specification
@@ -68,18 +70,14 @@ import spock.lang.Specification
   a << [5, 3]
   b << [1, 9]
   c << [5, 9]
-  }
-
-  //4 Helper Methods http://spockframework.org/spock/docs/1.1/all_in_one.html#_helper_methods
+  }//4 Helper Methods http://spockframework.org/spock/docs/1.1/all_in_one.html#_helper_methods
   -- with 的使用
   with(pc) {
   vendor == "Sunny"
   clockRate >= 2333
   ram >= 406
   os == "Linux"
-  }
-
-  //5 扩展
+  }//5 扩展
   --   @Timeout Sets a timeout for execution of a feature or fixture method.
   --   @Ignore Ignores a feature method.
   --   @IgnoreRest Ignores all feature methods not carrying this annotation. Useful for quickly running just a single method.
@@ -142,20 +140,32 @@ import spock.lang.Specification
 
   --stubbing 打桩
   --根据参数计算结果返回不同值
-  subscriber.receive(_) >> { args -> args[0].size() > 3 ? "ok" : "fail" }
-  -- 不同调用次数返回不同数据 chain链式响应
+  subscriber.receive(_) >> { args -> args[0].size() > 3 ? "ok" : "fail" }-- 不同调用次数返回不同数据 chain链式响应
   subscriber.receive(_) >>> ["ok", "fail", "ok"] >> { throw new InternalError() } >> "ok"
   前3次调用分别返回 "ok","fail","ok", 第4次抛出异常,其他任何调用都返回"ok"
 
   // 8 spring 集成 http://spockframework.org/spock/docs/1.1/all_in_one.html#_spring_module
 
  */
-@ContextConfiguration(loader = AnnotationConfigContextLoader, classes = [RedisConfig.class, RabbitConfig.class, BeanConfig.class])
+/**第一种方式ContextConfiguration 是引入MockBeanConfig中的mock配置类的,所有持久层mapper 都是mock对象**/
+//@ContextConfiguration(loader = AnnotationConfigContextLoader, classes = [RedisConfig.class, RabbitConfig.class, MockBeanConfig.class])
+/**现在用的第二种方式   是不引入mock,使用h2替换mysql,直接做隔离测试(个人觉得第二种种比较方便)**/
+@ContextConfiguration(loader = AnnotationConfigContextLoader, classes = [MybatisH2Config.class])
 class DetachedJavaConfig extends Specification {
+
     //使用spy对象前请三思(think twice before doing sth),基于真实对象
     @Autowired
     IRedPacketService redPacketServiceSpy
     @Autowired
-    RedPacketMapper redPacketMapperMock
+    StringRedisTemplate stringRedisTemplate
+    /**
+     * 当使用MybatisH2Config时 会自动注入h2 mapper对象
+     * 当使用MockBeanConfig时  自动注入mock后的mapper 对象
+     * 该功能得益于spring IOC 容器特性
+     */
+    @Autowired
+    RedPacketMapper redPacketMapper
+    @Autowired
+    RedPacketDetailMapper redPacketDetailMapper
 
 }

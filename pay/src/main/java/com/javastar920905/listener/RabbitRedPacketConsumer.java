@@ -18,8 +18,8 @@ import com.javastar920905.config.RabbitConfig;
  * 打开红包消费对你
  */
 @Component
-public class RedPacketConsumer {
-  private static final Logger LOGGER = LoggerFactory.getLogger(RedPacketConsumer.class);
+public class RabbitRedPacketConsumer {
+  private static final Logger LOGGER = LoggerFactory.getLogger(RabbitRedPacketConsumer.class);
 
 
   @RabbitListener(

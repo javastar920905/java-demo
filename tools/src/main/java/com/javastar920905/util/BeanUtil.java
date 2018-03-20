@@ -66,4 +66,19 @@ public class BeanUtil {
     }
     return null;
   }
+
+  public static Integer obj2Int(Object obj) {
+    return Integer.parseInt(String.valueOf(obj));
+  }
+
+  public static Integer byte2Int(byte[] byteObj) {
+    if (byteObj == null) {
+      return 0;
+    }
+    String temp = new String(byteObj);
+    if (temp.trim().equals("")) {
+      return 0;
+    }
+    return Integer.parseInt(new String(byteObj));
+  }
 }
