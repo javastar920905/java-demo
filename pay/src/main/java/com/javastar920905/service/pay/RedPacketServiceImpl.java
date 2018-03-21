@@ -32,6 +32,10 @@ public class RedPacketServiceImpl extends BaseService implements IRedPacketServi
   /**
    * 发红包 (添加红包记录,生成库存信息到reids)
    *
+   * TODO 2 需要服务费计算接口 2 金额体现接口
+   *
+   * (红包类型,随机红包/均分红包,可以在生成库存后直接生成金额)
+   *
    * @param redPacket
    * @return
    */
