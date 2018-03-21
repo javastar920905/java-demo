@@ -18,6 +18,8 @@ repositories {
 }
 dependencies {
     compile project(':tools')
+    compile project(':api')
+    compile project(':pay')
     compile('org.springframework.boot:spring-boot-starter')
     compile("org.springframework.boot:spring-boot-starter-web")
     compile("org.springframework.boot:spring-boot-starter-thymeleaf")
