@@ -85,6 +85,34 @@ import java.util.concurrent.TimeUnit;
 public class ThreadMainTest {
 
   /**
+   * CurrentThreadDemo 线程类的构造方法、静态块是被main线程调用的，而线程类的run()方法才是应用线程自己调用的。
+   * 
+   * "this.XXX()"和"Thread.currentThread().XXX()"的区别，这个就是最好的例子。必须要清楚的一点就是：当前执行的Thread未必就是Thread本身。
+   */
+  @Test
+  public void testCurrentThread() {
+    CurrentThreadDemo thread = new CurrentThreadDemo();
+    thread.start();
+    try {
+      thread.join();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+  }
+
+  /**
+   * sleep(long millis)方法的作用是在指定的毫秒内让当前"正在执行的线程"休眠（暂停执行）。
+   * 
+   * 这个"正在执行的线程"是关键，指的是Thread.currentThread()返回的线程。
+   * 
+   * TODO sleep代码上下文如果被加锁了，锁依然在，但是CPU资源会让出给其他线程
+   */
+  @Test
+  public void testSleep() {
+
+  }
+
+  /**
    * 继承thread 方式实现线程
    * 
    * 有可能有些人看不到这么明显的效果，这也很正常。
@@ -172,7 +200,7 @@ public class ThreadMainTest {
    *
    * join()方法会使调用join()方法的线程（也就是thread线程） 所在的线程（也就是main线程）无限阻塞，直到调用join()方法的线程销毁为止
    *
-   * TODO
+   * TODO http://www.cnblogs.com/xrq730/p/4851233.html
    *
    * join()方法的一个重点是要区分出和sleep()方法的区别。join(2000)也是可以的，表示调用join()方法所在的线程最多等待2000ms，两者的区别在于：
    * sleep(2000)不释放锁，"join(2000)释放锁"，因为join()方法内部使用的是wait()，因此会释放锁。看一下join(2000)的源码就知道了，join()其实和join(2000)一样，无非是join(0)而已：
