@@ -70,14 +70,13 @@ public class RedPacketValidator implements Validator {
     ValidationUtils.rejectIfEmpty(errors, "userId", "userId 不能为空");
     ValidationUtils.rejectIfEmpty(errors, "money", "oepnId 不能为空");
     ValidationUtils.rejectIfEmpty(errors, "packetSize", "红包数量 不能为空");
-    if (errors.hasErrors()) {
+    /*if (errors.hasErrors()) {
       for (FieldError fieldError : errors.getFieldErrors()) {
         System.out.println(fieldError.getField());
         System.out.println(fieldError.getRejectedValue());
         // ...
       }
-      return;
-    }
+    }*/
     RedPacket redPacket = (RedPacket) target;
     // 每个属性都需要做为空判断,验证器只会把错误信息填充到errors对象, 不会中断后面的语句
     if (redPacket.getPacketSize() != null) {

@@ -26,7 +26,7 @@ import com.javastar920905.util.StringUtil;
 /**
  * 统一处理异常切面
  */
-@ControllerAdvice
+//@ControllerAdvice
 public class ExceptionControllerAdvice {
   private static final Logger LOGGER = LoggerFactory.getLogger(ExceptionControllerAdvice.class);
   @Value("${email.exception.receiver}")
