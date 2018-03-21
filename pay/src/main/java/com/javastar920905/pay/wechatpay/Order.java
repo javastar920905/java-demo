@@ -1,4 +1,4 @@
-package com.javastar920905.api.wechatpay;
+package com.javastar920905.pay.wechatpay;
 
 
 /**
