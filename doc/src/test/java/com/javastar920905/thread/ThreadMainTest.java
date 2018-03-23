@@ -81,7 +81,11 @@ import java.util.concurrent.TimeUnit;
  * 
  *         2、sleep(long millis)
  *         sleep(longmillis)方法的作用是在指定的毫秒内让当前"正在执行的线程"休眠（暂停执行）。这个"正在执行的线程"是关键，指的是Thread.currentThread()返回的线程。
- */
+ *
+ *         //11 对类的静态方法加同步synchronized
+ *         假如一个StaticMethod类中有一个静态同步方法syncA()，new出了两个类的实例sB和实例sC，线程t1持有实例sB，线程t2持有实例sC，
+ *         只要线程t1调用了syncA()方法，那么线程t2调用syncA方法必须等待线程t1执行完syncA方法，尽管两个线程持有的是不同的对象。
+ **/
 public class ThreadMainTest {
 
   /**
@@ -128,7 +132,7 @@ public class ThreadMainTest {
    * 一个线程打印5句话本来就很快，可能在分出的时间片内就执行完成了。所以，最简单的解决办法就是把for循环的值调大一点就可以了（也可以在for循环里加Thread.sleep方法，这个之后再说）。
    */
   @Test
-  public void test1() {
+  public void testNormalThread() {
     CustomerThread thread = new CustomerThread();
     thread.start();
 
@@ -230,6 +234,11 @@ public class ThreadMainTest {
     new Thread(() -> numberOperation.addNumUnSafe("a")).start();
     new Thread(() -> numberOperation.addNumUnSafe("b")).start();
 
+    // 运行过程分析:1 线程a 运行设置num=100,打印a set over!,然后睡眠(模拟cpu调度)
+    // 2 线程a睡觉的时候,线程b也运行了,num被改成了200,然后打印出"b set over!"，然后打印"b num = 200"
+    // 3 线程a 睡觉回来,继续打印numberOperation的num,此时只能拿到线程b修改后的值了
+    // 解决方式: 如果想确保线程a拿到自己操作后的值,就需要把 赋值和输出语句同步(synchronized)了
+
     try {
       // 确保子线程够时间执行结束
       TimeUnit.SECONDS.sleep(3);
@@ -295,6 +304,92 @@ public class ThreadMainTest {
   }
 
   /**
+   * 多个对象多个锁
+   *
+   * 关键字synchronized取得的锁都是对象锁，而不是把一段代码或方法（函数）当作锁，哪个线程先执行带synchronized关键字的方法，哪个线程就持有该方法所属对象的锁，其他线程都只能呈等待状态。
+   * TODO 但是这有个前提：既然锁叫做对象锁，那么势必和对象相关，所以多个线程访问的必须是同一个对象。
+   * 
+   * 如果多个线程访问的是多个对象，那么Java虚拟机就会创建多个锁，这里，创建了两个对象，就产生了2个锁。所以两个线程持有的是不同的锁，
+   * 自然不会受到"等待释放锁"这一行为的制约，可以分别运行addNum(String userName)中的代码。
+   *
+   * TODO 锁重入(当一个线程得到一个对象锁后，再次请求此对象锁时时可以再次得到该对象的锁的(即可以再次调用当前对象任意同步代码块)。)
+   * http://www.cnblogs.com/xrq730/p/4851350.html
+   * 1、A线程持有Object对象的Lock锁，B线程可以以异步方式调用Object对象中的非synchronized类型的方法
+   * 
+   * 2、A线程持有Object对象的Lock锁，B线程如果在这时调用Object对象中的synchronized类型的方法则需要等待，也就是同步
+   *
+   * 当一个线程执行的代码出现异常时，其所持有的锁会自动释放。
+   */
+  @Test
+  public void testThreadSafe2() {
+    NumberOperation numberOperation1 = new NumberOperation();
+    NumberOperation numberOperation2 = new NumberOperation();
+
+
+    // join 方式实现主线程等待子线程结束
+    Thread thread1 = new Thread(() -> numberOperation1.addNumSafe("a"));
+    Thread thread2 = new Thread(() -> numberOperation2.addNumSafe("b"));
+
+    thread1.start();
+    thread2.start();
+    try {
+      thread1.join();
+      thread2.join();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+  }
+
+  /**
+   * 测试线程运行异常时,会自动释放对象锁
+   */
+  @Test
+  public void testReturnLockWhenException() {
+    ThreadWhenExceptionDemo exceptionDemo = new ThreadWhenExceptionDemo();
+
+    // 两个线程调用同一个对象的同步方法,当一个线程获取到对象锁时,其他线程需要等待
+    // 而 numberOperation 中的方法是死循环,一般不出异常时,是永远会执行下去,不会释放锁的
+    Thread thread1 = new Thread(() -> exceptionDemo.testMethod());
+    Thread thread2 = new Thread(() -> exceptionDemo.testMethod());
+
+    thread1.start();
+    thread2.start();
+    try {
+      System.out.println("thread2 状态1" + thread2.getState().name());// 状态是 RUNNABLE
+      TimeUnit.SECONDS.sleep(1);// 确保两个线程都处于runnable状态
+      System.out.println("thread2 状态2" + thread2.getState().name());// 状态是 BLOCKED
+      // join 方式实现主线程等待子线程结束
+      thread1.join();
+      thread2.join();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+  }
+
+  /**
+   * 测试对长时间执行的任务 代码块加锁 说不太清楚 可以先看源文档 http://www.cnblogs.com/xrq730/p/4851530.html
+   */
+  @Test
+  public void testLongTimeCondition() {
+    DoLongTimeTask longTimeTask = new DoLongTimeTask();
+
+    Thread thread1 = new Thread(() -> longTimeTask.doLongTimeTask());
+    Thread thread2 = new Thread(() -> longTimeTask.doLongTimeTask());
+
+    thread1.start();
+    thread2.start();
+
+    try {
+
+      // join 方式实现主线程等待子线程结束
+      thread1.join();
+      thread2.join();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  /**
    * todo wait()和notify()/notifyAll() http://www.cnblogs.com/xrq730/p/4853932.html
    *
    * 在调用wait()之前，线程必须获得该对象的锁，因此只能在同步方法/同步代码块中调用wait()方法。 和wait()一样，
@@ -305,7 +400,7 @@ public class ThreadMainTest {
    * 总结: wait()使线程停止运行， notify()使停止运行的线程继续运行。
    */
   @Test
-  public void name() {
+  public void testNotify() {
 
   }
 
@@ -315,9 +410,117 @@ public class ThreadMainTest {
    */
   @Test
   public void testVolatile() {
+    VolatileThreadDemo.UnsafeThread unsafeThread = new VolatileThreadDemo.UnsafeThread();
+    unsafeThread.start();
+
+    try {
+      TimeUnit.SECONDS.sleep(1);
+
+      unsafeThread.setRunning(false);
+      System.out.println(unsafeThread.getName() + " 已赋值为run=false");
+
+      System.out.println(unsafeThread.getName() + " 状态=" + unsafeThread.getState().name());// 结果为RUNNABLE
+
+      // 明明isRunning已经设置为false了， 线程还没停止呢？
+      /**
+       * TODO 理解 这就要从Java内存模型（JMM）说起，简单讲，虚拟机那块会详细讲的。 根据JMM，Java中有一块主内存，不同的线程有自己的工作内存，同一个变量值在主内存中有一份，
+       * 如果线程用到了这个变量的话，自己的工作内存中有一份一模一样的拷贝,每次进入线程从主内存中拿到变量值，每次执行完线程将变量从工作内存同步回主内存中。
+       * 
+       * 出现打印结果现象的原因就是主内存和工作内存中数据的不同步造成的。因为执行run()方法的时候拿到一个主内存isRunning的拷贝，而设置isRunning是在main函数中做的.
+       * 换句话说设置的isRunning设置的是主内存中的isRunning，更新了主内存的isRunning，线程工作内存中的isRunning没有更新，当然一直死循环了，因为对于线程来说，它的isRunning依然是true。
+       * 
+       * 解决这个问题很简单，给isRunning关键字加上volatile。
+       * 加上了volatile的意思是，每次读取isRunning的值的时候，都先从主内存中把isRunning同步到线程的工作内存中，再当前时刻最新的isRunning。
+       **/
+      System.out.println("=============>分割线 \n\n");
+      VolatileThreadDemo.VolatileThread volatileThread = new VolatileThreadDemo.VolatileThread();
+      volatileThread.start();
+
+      TimeUnit.SECONDS.sleep(1);
+
+      volatileThread.setRunning(false);
+      System.out.println(unsafeThread.getName() + " 已赋值为run=false");
+
+      System.out.println(unsafeThread.getName() + " 状态=" + volatileThread.getState().name());// 结果为RUNNABLE,但是线程会马上被停止
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
 
   }
 
+  /**
+   * 线程安全类,多个逻辑操作也不保证线程安全(需要加锁)
+   */
+  @Test
+  public void testAtomicUnsafe() {
+    CountDownLatch latch = new CountDownLatch(5);
+    AtomicDemo demo = new AtomicDemo();
+
+    new Thread(() -> {
+      demo.addNumUnSafe();
+      latch.countDown();
+    }).start();
+    new Thread(() -> {
+      demo.addNumUnSafe();
+      latch.countDown();
+    }).start();
+    new Thread(() -> {
+      demo.addNumUnSafe();
+      latch.countDown();
+    }).start();
+    new Thread(() -> {
+      demo.addNumUnSafe();
+      latch.countDown();
+    }).start();
+    new Thread(() -> {
+      demo.addNumUnSafe();
+      latch.countDown();
+    }).start();
+
+
+    try {
+      latch.await();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+    System.out.println(demo.aiRef.get());
+  }
+
+  @Test
+  public void testAtomicSafe() {
+    CountDownLatch latch = new CountDownLatch(5);
+
+    AtomicDemo demo = new AtomicDemo();
+
+    new Thread(() -> {
+      demo.addNumSafe();
+      latch.countDown();
+    }).start();
+    new Thread(() -> {
+      demo.addNumSafe();
+      latch.countDown();
+    }).start();
+    new Thread(() -> {
+      demo.addNumSafe();
+      latch.countDown();
+    }).start();
+    new Thread(() -> {
+      demo.addNumSafe();
+      latch.countDown();
+    }).start();
+    new Thread(() -> {
+      demo.addNumSafe();
+      latch.countDown();
+    }).start();
+
+
+    try {
+      latch.await();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+    System.out.println(demo.aiRef.get());
+  }
 
   /**
    * ThreadLocal的作用和使用 http://www.cnblogs.com/xrq730/p/4854820.html
@@ -337,7 +540,8 @@ public class ThreadMainTest {
    * 
    * 2、每一个ThreadLocal对象都有一个循环计数器
    * 
-   * 3、ThreadLocal.get()取值，就是根据当前的线程，获取线程中自己的ThreadLocal.ThreadLocalMap，然后在这个Map中根据第二点中循环计数器取得一个特定value值
+   * 3、ThreadLocal.get()取值，就是根据当前的线程，获取线程中自己的ThreadLocal.ThreadLocalMap，
+   * 然后在这个Map中根据第二点中循环计数器取得一个特定value值
    */
   @Test
   public void testThreadLocal() {
@@ -347,6 +551,14 @@ public class ThreadMainTest {
     a.start();
     b.start();
     c.start();
+
+    try {
+      a.join();
+      b.join();
+      c.join();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
   }
 
   /**

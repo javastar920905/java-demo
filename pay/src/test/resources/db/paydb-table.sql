@@ -19,16 +19,21 @@ USE `paydb`;*/
 
 /*Table structure for table `red_packet` */
 
+
 DROP TABLE IF EXISTS `red_packet`;
 
 CREATE TABLE `red_packet` (
   `id` varchar(32) NOT NULL,
-  `user_id` varchar(32) DEFAULT NULL,
+  `user_id` varchar(32) DEFAULT NULL COMMENT '小程序openId',
   `money` double DEFAULT NULL COMMENT '红包金额',
   `rest_money` double DEFAULT NULL COMMENT '字段冗余,剩余金额',
-  `expire_time` datetime DEFAULT NULL,
-  `create_date` datetime DEFAULT NULL,
+  `expire_time` datetime DEFAULT NULL COMMENT '红包过期时间',
+  `create_date` datetime DEFAULT NULL COMMENT '红包创建时间',
   `packet_size` tinyint(4) DEFAULT NULL,
+  `payed_money` double DEFAULT NULL COMMENT '真实支付金额',
+  `wechatOrderNo` varchar(32) DEFAULT NULL COMMENT '微信支付订单号',
+  `type` tinyint(4) DEFAULT NULL COMMENT '红包类型(口令:1,贺卡:2)',
+  `orderStatus` tinyint(4) DEFAULT NULL COMMENT '订单状态(1:待支付,2:已支付,3:申请退款,4:退款中)',
   PRIMARY KEY (`id`)
 );
 
