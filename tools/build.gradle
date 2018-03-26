@@ -33,6 +33,9 @@ dependencies {
     compile("org.redisson:redisson:3.5.0")
     compile("com.rabbitmq:amqp-client:${rabbitmqVersion}")
     compile("org.springframework.amqp:spring-rabbit:1.7.1.RELEASE")
+
+    //缓存支持
+    //compile("org.springframework.boot:spring-boot-starter-cache")
 }
 
 

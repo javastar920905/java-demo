@@ -4,11 +4,14 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.javastar920905.config.RabbitConfig;
+import com.javastar920905.config.RedisConfig;
 import com.javastar920905.constant.CommonConstants;
 import com.javastar920905.outer.spring.mq.RabbitMessageProducer;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.stereotype.Service;
@@ -254,7 +257,8 @@ public class RedPacketServiceImpl extends BaseService implements IRedPacketServi
     try {
       connection = RedisFactory.getConnection();
       RedissonClient redissonClient = SpringContextUtil.getBean(RedissonClient.class);
-      lock = redissonClient.getLock("bookingRedPacket2WithDoubleQuque:lock");
+      // 锁住指定红包
+      lock = redissonClient.getLock("redPacket:lock:" + redPacketId);
 
       // 尝试加锁，最多等待5秒，上锁以后5秒自动解锁(避免死锁)
       if (lock.tryLock(5, 5, TimeUnit.SECONDS)) {
@@ -350,4 +354,21 @@ public class RedPacketServiceImpl extends BaseService implements IRedPacketServi
     return buildfailResult("领取红包异常!");
   }
 
+  /**
+   * 获取红包领取详情列表
+   *
+   * @param redPacketId
+   * @return
+   */
+  @Override
+  @Cacheable(value = RedisConfig.Cachekey.CACHE_REDPACKET_DETAIL, key = "#p0")
+  public JSONObject getRedPacketDetailList(String redPacketId) {
+    JSONObject detailJson = new JSONObject();
+    EntityWrapper<RedPacketDetail> detailEntityWrapper = new EntityWrapper();
+    detailEntityWrapper.setEntity(new RedPacketDetail());
+    detailEntityWrapper.where("red_packet_id={0}", redPacketId);
+    List<RedPacketDetail> detailList = redPacketDetailMapper.selectList(detailEntityWrapper);
+    detailJson.put("detailList", detailList);
+    return detailJson;
+  }
 }

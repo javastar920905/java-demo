@@ -1,5 +1,6 @@
 package com.javastar920905
 
+import cn.hutool.json.JSONArray
 import com.alibaba.fastjson.JSONObject
 import com.baomidou.mybatisplus.mapper.EntityWrapper
 import com.javastar920905.constant.CommonConstants
@@ -9,6 +10,8 @@ import com.javastar920905.outer.redis.RedisFactory
 import com.javastar920905.thread.RobThread
 import com.javastar920905.util.BeanUtil
 import org.springframework.data.redis.connection.RedisConnection
+import spock.lang.Ignore
+import spock.lang.IgnoreRest
 import spock.lang.See
 import spock.lang.Shared
 import spock.lang.Stepwise
@@ -82,7 +85,8 @@ class RedPacketSpecification extends DetachedJavaConfig {
         "2"         | "ouzhx" | 5d    | 5    | new Timestamp(System.currentTimeMillis()) | new Timestamp(System.currentTimeMillis() + 1000000000)
     }
 
-    def "抢红包功能测试-异常回滚"(){
+    @Ignore("TODO ")
+    def "抢红包功能测试-异常回滚"() {
 
     }
 
@@ -156,6 +160,18 @@ class RedPacketSpecification extends DetachedJavaConfig {
         "ouzhx-rob1" | "1"         | 5
         "ouzhx-rob1" | "1"         | 10
         "ouzhx-rob1" | "2"         | 50
+    }
+
+    //@IgnoreRest
+    def "红包领取详情+缓存"() {
+        given: "查询指定红包详情"
+        def redPacketId = "1"
+
+        expect: "加载到红包详情,并且已经缓存到redis"
+        JSONObject detailList = redPacketServiceSpy.getRedPacketDetailList(redPacketId)
+        JSONArray array = detailList.getJSONArray("detailList");
+        assert array != null && array.size() > 0
+        assert connection.exists(("cache:redPacket:detail:" + 1).getBytes())
     }
 
 

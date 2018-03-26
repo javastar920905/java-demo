@@ -122,4 +122,12 @@ public interface IRedPacketService extends IBaseService {
   JSONObject oepnRedPacket2(String openId, String nickName, String redPacketId,
       RedisConnection connection);
   // </editor-fold>
+
+  /**
+   * 获取红包领取详情列表
+   * 
+   * @param redPacketId
+   * @return
+   */
+  JSONObject getRedPacketDetailList(String redPacketId);
 }

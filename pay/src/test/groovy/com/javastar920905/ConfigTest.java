@@ -5,10 +5,6 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import com.javastar920905.service.pay.IRedPacketService;
-import com.javastar920905.util.BeanUtil;
-import com.javastar920905.util.ByteUtil;
-import com.javastar920905.util.MoneyUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -19,6 +15,7 @@ import com.javastar920905.config.MybatisConfig;
 import com.javastar920905.entity.domain.RedPacket;
 import com.javastar920905.entity.domain.User;
 import com.javastar920905.mapper.UserMapper;
+import com.javastar920905.service.pay.IRedPacketService;
 import com.javastar920905.util.StringUtil;
 
 /**
