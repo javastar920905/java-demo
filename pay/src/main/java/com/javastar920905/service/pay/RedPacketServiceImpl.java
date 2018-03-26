@@ -253,19 +253,22 @@ public class RedPacketServiceImpl extends BaseService implements IRedPacketServi
     RLock lock = null;
     try {
       connection = RedisFactory.getConnection();
-      // 加入分布式锁,保证操作原子性
       RedissonClient redissonClient = SpringContextUtil.getBean(RedissonClient.class);
       lock = redissonClient.getLock("bookingRedPacket2WithDoubleQuque:lock");
-      /// 尝试加锁，最多等待5秒，上锁以后5秒自动解锁(避免死锁)
+
+      // 尝试加锁，最多等待5秒，上锁以后5秒自动解锁(避免死锁)
       if (lock.tryLock(5, 5, TimeUnit.SECONDS)) {
         byte[] queueResultKey = getRedPacketQueueResultKey(redPacketId);
-        // 添加已排队集合,避免重复领取
+        // 避免重复领取(加入分布式锁,保证操作原子性)
         if (!connection.sIsMember(queueResultKey, openId.getBytes())) {
-          // 1 因为列表的pop操作是原子的，即使有很多用户同时到达，也是依次执行的 (但是没有避免重复消费问题,可以在打开红包那里处理)
+
+          // 1 成功抢到一个红包,减少一个库存
           if (connection.lPop(getRedPacketKey(redPacketId)) != null) {
+
+            // 2 开始拆红包
             JSONObject resultJson = oepnRedPacket2(openId, nickName, redPacketId, connection);
             if (resultJson.getBooleanValue(CommonConstants.key.result.name())) {
-              // 2 抢红包成功
+              // 3 抢红包成功,添加到领取结果列表
               connection.sAdd(queueResultKey, openId.getBytes());
             }
             lock.unlock();
