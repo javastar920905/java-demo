@@ -1,9 +1,11 @@
 package com.javastar920905.service.pay;
 
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import com.javastar920905.config.RabbitConfig;
+import com.javastar920905.constant.CommonConstants;
 import com.javastar920905.outer.spring.mq.RabbitMessageProducer;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -108,6 +110,8 @@ public class RedPacketServiceImpl extends BaseService implements IRedPacketServi
     RedisConnection connection = null;
     try {
       connection = RedisFactory.getConnection();
+      // 排队队列解决重复消费问题 ,判断没有进入过抢购结果队列?接着执行库存减1，写入数据库，将此user_id用户同时也进入结果队列。:(已经抢过了);
+
 
       // 1 因为列表的pop操作是原子的，即使有很多用户同时到达，也是依次执行的 (但是没有避免重复消费问题,可以在打开红包那里处理)
       if (connection.lPop(getRedPacketKey(redPacketId)) != null) {
@@ -120,8 +124,10 @@ public class RedPacketServiceImpl extends BaseService implements IRedPacketServi
         // todo 24 小时未领取完 退回余额(24 小时后不再显示流水)
         // connection.rPush(getRedPacketQueueKey(redPacketId), openId.getBytes());
         // connection.publish(RedisConfig.CHANNEL_TOPIC_RED_PACKET.getBytes(), userInfo);
-        SpringContextUtil.getBean(RabbitMessageProducer.class).sendMessage(userJson.toJSONString(),
-            RabbitConfig.ROUTE_KEY_REDPACKET);
+        /*
+         * SpringContextUtil.getBean(RabbitMessageProducer.class).sendMessage(userJson.toJSONString(
+         * ), RabbitConfig.ROUTE_KEY_REDPACKET);
+         */
         return buildSuccessResult("成功进入到抢红包队列");
       } else {
         // 队列消费完又没有成功打开红包时(用户看到红包没有被领取完,红包也可能被重新转发等...),抢红包失败
@@ -234,7 +240,7 @@ public class RedPacketServiceImpl extends BaseService implements IRedPacketServi
   /*******************************************************************************************************/
 
   /**
-   * 抢红包2 (生成排队队列,并发转单线程)
+   * 抢红包实现方式2
    *
    * @param openId 微信标识
    * @param redPacketId 红包Id
@@ -244,32 +250,40 @@ public class RedPacketServiceImpl extends BaseService implements IRedPacketServi
   public JSONObject bookingRedPacket2WithDoubleQuque(String openId, String nickName,
       String redPacketId) {
     RedisConnection connection = null;
+    RLock lock = null;
     try {
       connection = RedisFactory.getConnection();
-
-      // 1 因为列表的pop操作是原子的，即使有很多用户同时到达，也是依次执行的 (但是没有避免重复消费问题,可以在打开红包那里处理)
-      if (connection.lPop(getRedPacketKey(redPacketId)) != null) {
-        // 2 抢红包成功
-        JSONObject userJson = new JSONObject();
-        userJson.put("openId", openId);
-        userJson.put("nickName", nickName);
-        userJson.put("redPacketId", redPacketId);
-        // 3 请求进入队列 (进入拆红包队列(推送队列rabbitmq 或者redis 发布订阅--可能出现消费不完整情况))
-        // todo 24 小时未领取完 退回余额(24 小时后不再显示流水)
-        connection.rPush(getRedPacketQueueKey(redPacketId), openId.getBytes());
-        // TODO 注意这里调用的是消息队列2 的路由key
-        SpringContextUtil.getBean(RabbitMessageProducer.class).sendMessage(userJson.toJSONString(),
-            RabbitConfig.ROUTE_KEY_REDPACKET_2);
-        return buildSuccessResult("成功进入到抢红包队列");
-      } else {
-        // 队列消费完又没有成功打开红包时(用户看到红包没有被领取完,红包也可能被重新转发等...),抢红包失败
-        // todo 24 小时未领取完 退回余额(24 小时后不再显示流水)
-        return buildfailResult("sorry! 红包已经被抢完.");
+      // 加入分布式锁,保证操作原子性
+      RedissonClient redissonClient = SpringContextUtil.getBean(RedissonClient.class);
+      lock = redissonClient.getLock("bookingRedPacket2WithDoubleQuque:lock");
+      /// 尝试加锁，最多等待5秒，上锁以后5秒自动解锁(避免死锁)
+      if (lock.tryLock(5, 5, TimeUnit.SECONDS)) {
+        byte[] queueResultKey = getRedPacketQueueResultKey(redPacketId);
+        // 添加已排队集合,避免重复领取
+        if (!connection.sIsMember(queueResultKey, openId.getBytes())) {
+          // 1 因为列表的pop操作是原子的，即使有很多用户同时到达，也是依次执行的 (但是没有避免重复消费问题,可以在打开红包那里处理)
+          if (connection.lPop(getRedPacketKey(redPacketId)) != null) {
+            JSONObject resultJson = oepnRedPacket2(openId, nickName, redPacketId, connection);
+            if (resultJson.getBooleanValue(CommonConstants.key.result.name())) {
+              // 2 抢红包成功
+              connection.sAdd(queueResultKey, openId.getBytes());
+            }
+            lock.unlock();
+            return resultJson;
+          } else {
+            lock.unlock();
+            return buildfailResult("sorry! 红包已经被抢完.");
+          }
+        } else {
+          lock.unlock();
+          return buildfailResult("sorry! 您已经抢过该红包.");
+        }
       }
+
     } catch (Exception e) {
       e.printStackTrace();
     } finally {
-      if (connection != null) {
+      if (connection != null && !connection.isClosed()) {
         connection.close();
       }
     }
@@ -285,93 +299,49 @@ public class RedPacketServiceImpl extends BaseService implements IRedPacketServi
    */
   @Transactional(rollbackFor = Exception.class)
   @Override
-  public JSONObject oepnRedPacket2WithDoubleQuque(String openId, String nickName,
-      String redPacketId) {
+  public JSONObject oepnRedPacket2(String openId, String nickName, String redPacketId,
+      RedisConnection connection) {
+    // 剩余红包数key
+    byte[] redPacketSizeKey = getRedPacketSizeKey(redPacketId);
 
-    // 24 小时未领取完 退回余额(24 小时后不再显示流水)
-    RedisConnection connection = null;
+    // 1 开始拆红包,查询红包,生成随机金额
+    RedPacket redPacket = redPacketMapper.selectById(redPacketId);
 
-    try {
-      connection = RedisFactory.getConnection();
-
-      // 1 因为列表的pop操作是原子的，即使有很多用户同时到达，也是依次执行的 (但是没有避免重复消费问题,可以在打开红包那里处理)
-      if (connection.lPop(getRedPacketQueueKey(redPacketId)) != null) {
-        RLock lock = null;
-        RedissonClient redissonClient = SpringContextUtil.getBean(RedissonClient.class);
-        lock = redissonClient.getLock("oepnRedPacket:lock");
-        // 此处要添加锁 保证操作原子性,否则会出现消费金额大于红包金额情况
-        if (lock.tryLock(1, 5, TimeUnit.SECONDS)) {
-          // 红包库存key
-          byte[] redPacketKey = getRedPacketKey(redPacketId);
-          // 剩余红包数key
-          byte[] redPacketSizeKey = getRedPacketSizeKey(redPacketId);
-
-
-          RedPacketDetail queryDetail = new RedPacketDetail();
-          queryDetail.setRedPacketId(redPacketId);
-          queryDetail.setOepnId(openId);
-          if (redPacketDetailMapper.selectOne(queryDetail) != null) {
-            // 2 避免重复领取(处理重复消费问题),恢复一个库存
-            connection.rPush(redPacketKey, "1".getBytes());
-            return buildfailResult("您已经领取过该红包,不能重复领取.");
-          } else {
-            // 3 开始拆红包,查询红包,生成随机金额
-            RedPacket redPacket = redPacketMapper.selectById(redPacketId);
-
-            // 4 避免超额消费
-            if (redPacket.getRestMoney() > 0) {
-              double randMoney = 0;
-              byte[] size = connection.get(redPacketSizeKey);
-              if (size != null) {
-                // 生成红包金额,如果是最后一个红包则是剩余金额(要求每个人至少0.01)
-                int restSize = Integer.valueOf(ByteUtil.getString(size));
-                if (restSize > 1) {
-                  randMoney = Double.parseDouble(MoneyUtil.numberDown(
-                      MoneyUtil.nextDouble(0.01, redPacket.getRestMoney() - (restSize * 0.01))));
-                } else {
-                  randMoney = redPacket.getRestMoney();
-                }
-              } else {
-                // 2 redis获取剩余红包数可能存在问题,恢复一个库存
-                connection.rPush(redPacketKey, "1".getBytes());
-                return buildfailResult("领取红包失败,刷新试试!");
-              }
-
-              // 5 扣除余额
-              RedPacket updateRedPacket = new RedPacket();
-              updateRedPacket.setId(redPacket.getId());
-              updateRedPacket.setRestMoney(redPacket.getRestMoney() - randMoney);
-              int ur = redPacketMapper.updateById(updateRedPacket);
-              if (ur > 0) {
-                // 6 记录拆红包记录
-                RedPacketDetail detail = new RedPacketDetail();
-                detail.setMoney(randMoney);
-                detail.setOepnId(openId);
-                detail.setRedPacketId(redPacketId);
-                detail.setCreateDate(new Timestamp(System.currentTimeMillis()));
-                detail.setNickName(nickName);
-                int detailResult = redPacketDetailMapper.insert(detail);
-                if (detailResult > 0) {
-                  // 7 提供缓存实时领取记录
-                  connection.rPush(getRedPacketDetailKey(redPacketId),
-                      BeanUtil.toByteArray(detail));
-                  connection.decr(redPacketSizeKey);
-                  // todo 记录key 24小时后失效(优化处理)
-                  lock.unlock();
-                  return buildSuccessResult("恭喜您领取到红包:" + randMoney);
-                }
-              }
-            }
-          }
+    // 2 避免超额消费
+    if (redPacket.getRestMoney() > 0) {
+      double randMoney = 0;
+      byte[] size = connection.get(redPacketSizeKey);
+      if (size != null) {
+        // 生成红包金额,如果是最后一个红包则是剩余金额(要求每个人至少0.01)
+        int restSize = Integer.valueOf(ByteUtil.getString(size));
+        if (restSize > 1) {
+          randMoney = Double.parseDouble(MoneyUtil.numberDown(
+              MoneyUtil.nextDouble(0.01, redPacket.getRestMoney() - (restSize * 0.01))));
+        } else {
+          randMoney = redPacket.getRestMoney();
         }
-      } else {
-        return buildfailResult("队列中没有排队抢红包用户");
       }
-    } catch (Exception e) {
-      e.printStackTrace();
-    } finally {
-      if (connection != null) {
-        connection.close();
+
+      // 3 扣除余额
+      RedPacket updateRedPacket = new RedPacket();
+      updateRedPacket.setId(redPacket.getId());
+      updateRedPacket.setRestMoney(redPacket.getRestMoney() - randMoney);
+      int ur = redPacketMapper.updateById(updateRedPacket);
+      if (ur > 0) {
+        // 4 记录拆红包记录
+        RedPacketDetail detail = new RedPacketDetail();
+        detail.setMoney(randMoney);
+        detail.setOepnId(openId);
+        detail.setRedPacketId(redPacketId);
+        detail.setCreateDate(new Timestamp(System.currentTimeMillis()));
+        detail.setNickName(nickName);
+        int detailResult = redPacketDetailMapper.insert(detail);
+        if (detailResult > 0) {
+          // 5 减少库存数
+          connection.decr(redPacketSizeKey);
+          // todo 记录key 24小时后失效(优化处理)
+          return buildSuccessResult("恭喜您领取到红包:" + randMoney);
+        }
       }
     }
     return buildfailResult("领取红包异常!");

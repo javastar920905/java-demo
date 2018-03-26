@@ -82,6 +82,9 @@ class RedPacketSpecification extends DetachedJavaConfig {
         "2"         | "ouzhx" | 5d    | 5    | new Timestamp(System.currentTimeMillis()) | new Timestamp(System.currentTimeMillis() + 1000000000)
     }
 
+    def "抢红包功能测试-异常回滚"(){
+
+    }
 
     def "抢红包功能测试-不论多少人抢都能保证金额一致性"() {
         assert redPacketId != null
@@ -95,7 +98,6 @@ class RedPacketSpecification extends DetachedJavaConfig {
 
         try {
             countDownLatch.await()
-            TimeUnit.SECONDS.sleep(20 * 2);
         } catch (InterruptedException e) {
             e.printStackTrace()
         }
@@ -133,26 +135,27 @@ class RedPacketSpecification extends DetachedJavaConfig {
         //剩余红包数
         int redPacketSize = BeanUtil.byte2Int(size)
         //已抢红包数
-        Long detailSize = connection.lLen(redPacketServiceSpy.getRedPacketDetailKey(redPacketId))
+        Long queueResultSize = connection.sCard(redPacketServiceSpy.getRedPacketQueueResultKey(redPacketId))
         if (redPacketSize == 0) {
             //红包抢完的情况(红包余额0,库存空,,消费数==红包数)
             assert redPacket.getRestMoney() == 0
             assert connection.exists(redPacketServiceSpy.getRedPacketKey(redPacketId)) == false
             //总红包数=已抢红包数
-            assert detailSize == redPacket.getPacketSize()
+            assert queueResultSize == redPacket.getPacketSize()
         } else {
             //红包没有抢完的情况
-            if (detailSize == null) {
-                detailSize = 0
+            if (queueResultSize == null) {
+                queueResultSize = 0
             }
             //总红包数-已抢红包数=剩余红包
-            assert (redPacket.getPacketSize() - detailSize) == redPacketSize
+            assert (redPacket.getPacketSize() - queueResultSize) == redPacketSize
         }
 
         where: "给出以下红包信息"
         userId       | redPacketId | robNums
         "ouzhx-rob1" | "1"         | 5
-        //"2" | "ouzhx-rob2" | "2"         | 10
+        "ouzhx-rob1" | "1"         | 10
+        "ouzhx-rob1" | "2"         | 50
     }
 
 
