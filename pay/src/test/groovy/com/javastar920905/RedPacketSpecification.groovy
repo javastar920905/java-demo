@@ -19,7 +19,6 @@ import spock.lang.Title
 
 import java.sql.Timestamp
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 
 /**
  * @author ouzhx on 2018/3/19.
@@ -31,7 +30,7 @@ class RedPacketSpecification extends DetachedJavaConfig {
     @Shared
     RedisConnection connection = null
     @Shared
-    boolean firstCleanDb = false
+    boolean firstCleanRedisDb = false
 
     def setup() {
         connection = RedisFactory.getConnection()
@@ -45,9 +44,9 @@ class RedPacketSpecification extends DetachedJavaConfig {
     }
 
     def "发红包功能测试"() {
-        if (firstCleanDb == false) {
+        if (firstCleanRedisDb == false) {
             // "删除当前数据库db0的所有key,确认redis中没有脏数据"
-            firstCleanDb = true
+            firstCleanRedisDb = true
             connection.flushDb()
             assert connection.exists(redPacketServiceSpy.getRedPacketKey(redPacketId)) == false
         }
@@ -162,16 +161,29 @@ class RedPacketSpecification extends DetachedJavaConfig {
         "ouzhx-rob1" | "2"         | 50
     }
 
-    //@IgnoreRest
+    @IgnoreRest
     def "红包领取详情+缓存"() {
-        given: "查询指定红包详情"
+        given: "清除缓存,查询指定红包详情"
         def redPacketId = "1"
+        byte[] redPacketDetailKey = ("getRedPacketDetailList" + redPacketId).getBytes();
+        //sql添加需要的数据
+        sql.execute("INSERT INTO `red_packet_detail`(`id`, `red_packet_id`, `oepn_id`,`money`,`create_date`)"
+                + "VALUES ('1', '1','openId1',0.01, '2018-03-27 11:26:05')," +
+                "('2', '1','openId1',0.01,'2018-03-27 11:26:05')" +
+                ";");
+        if (firstCleanRedisDb == false) {
+            // "删除当前数据库db0的所有key,确认redis中没有脏数据"
+            firstCleanRedisDb = true
+            connection.flushDb()
+            assert connection.exists(redPacketDetailKey) == false
+        }
+
 
         expect: "加载到红包详情,并且已经缓存到redis"
         JSONObject detailList = redPacketServiceSpy.getRedPacketDetailList(redPacketId)
         JSONArray array = detailList.getJSONArray("detailList");
         assert array != null && array.size() > 0
-        assert connection.exists(("cache:redPacket:detail:" + 1).getBytes())
+        assert connection.exists(redPacketDetailKey) == true
     }
 
 
