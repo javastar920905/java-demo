@@ -4,11 +4,14 @@ import com.javastar920905.mapper.RedPacketDetailMapper
 import com.javastar920905.mapper.RedPacketMapper
 import com.javastar920905.outer.redis.RedisFactory
 import com.javastar920905.service.pay.IRedPacketService
+import groovy.sql.Sql
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.redis.connection.RedisConnection
 import org.springframework.data.redis.core.StringRedisTemplate
+import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.support.AnnotationConfigContextLoader
+import spock.lang.Shared
 import spock.lang.Specification
 
 /**
@@ -151,8 +154,16 @@ import spock.lang.Specification
 //@ContextConfiguration(loader = AnnotationConfigContextLoader, classes = [RedisConfig.class, RabbitConfig.class, MockBeanConfig.class])
 /**现在用的第二种方式   是不引入mock,使用h2替换mysql,直接做隔离测试(个人觉得第二种种比较方便)**/
 @ContextConfiguration(loader = AnnotationConfigContextLoader, classes = [MybatisH2Config.class])
+@ActiveProfiles("test")
 class DetachedJavaConfig extends Specification {
+    @Shared
+            sql = Sql.newInstance("jdbc:h2:mem:paydb", "org.h2.Driver")
 
+    // insert data (usually the database would already contain the data)
+    def setupSpec() {
+        sql.execute("create table maxdata (id int primary key, a int, b int, c int)")
+        sql.execute("insert into maxdata values (1, 3, 7, 7), (2, 5, 4, 5), (3, 9, 9, 9)")
+    }
     //使用spy对象前请三思(think twice before doing sth),基于真实对象
     @Autowired
     IRedPacketService redPacketServiceSpy

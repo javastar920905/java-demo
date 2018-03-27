@@ -14,6 +14,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -69,12 +70,26 @@ public class RedisConfig {
   }
 
   @Bean(name = "jedisConnectionFactory")
+  @Profile("default")
   public JedisConnectionFactory jedisConnectionFactory(JedisPoolConfig jedisPoolConfig) {
     JedisConnectionFactory factory = new JedisConnectionFactory();
     factory.setUsePool(true);
     factory.setPoolConfig(jedisPoolConfig);
     factory.setHostName(PropertiesConfig.properties.getProperty("redis.host"));
     factory.setPort(6379);
+    return factory;
+  }
+
+  @Bean(name = "jedisConnectionFactory")
+  @Profile("test")
+  public JedisConnectionFactory jedisConnectionFactoryForTest(JedisPoolConfig jedisPoolConfig) {
+    JedisConnectionFactory factory = new JedisConnectionFactory();
+    factory.setUsePool(true);
+    factory.setPoolConfig(jedisPoolConfig);
+    factory.setHostName(PropertiesConfig.properties.getProperty("redis.host"));
+    factory.setPort(6379);
+    // TODO 测试时使用测试数据库
+    factory.setDatabase(1);
     return factory;
   }
 

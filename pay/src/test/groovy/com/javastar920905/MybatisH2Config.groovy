@@ -24,6 +24,7 @@ import org.springframework.context.annotation.FilterType
 import org.springframework.context.annotation.Import
 import org.springframework.context.annotation.ImportResource
 import org.springframework.jdbc.datasource.DataSourceTransactionManager
+import org.springframework.test.context.ActiveProfiles
 import org.springframework.transaction.annotation.EnableTransactionManagement
 
 /**
