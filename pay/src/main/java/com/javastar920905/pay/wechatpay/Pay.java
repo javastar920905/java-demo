@@ -8,6 +8,8 @@ package com.javastar920905.pay.wechatpay;
  * 小程序支付接口文档 https://mp.weixin.qq.com/debug/wxadoc/dev/api/api-pay.html#wxrequestpaymentobject
  *
  * 接口调用时序图 https://pay.weixin.qq.com/wiki/doc/api/wxa/wxa_api.php?chapter=7_4&index=3
+ *
+ * 微信支付api封装 https://github.com/wxpay/WXPay-SDK-Java(微信支付 Java SDK)
  */
 public class Pay {
 }
