@@ -361,7 +361,10 @@ public class RedPacketServiceImpl extends BaseService implements IRedPacketServi
    * @return
    */
   @Override
-  @Cacheable(value = RedisConfig.Cachekey.CACHE_REDPACKET_DETAIL, key = "#p0")
+  /**
+   *TODO  默认缓存key以"方法名+参数值"区分 (getRedPacketDetailList+参数1值)
+   */
+  @Cacheable(value = RedisConfig.Cachekey.CACHE_REDPACKET_DETAIL, key = "#root.methodName+#p0")
   public JSONObject getRedPacketDetailList(String redPacketId) {
     JSONObject detailJson = new JSONObject();
     EntityWrapper<RedPacketDetail> detailEntityWrapper = new EntityWrapper();
