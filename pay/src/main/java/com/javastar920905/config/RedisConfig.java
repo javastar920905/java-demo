@@ -86,6 +86,11 @@ public class RedisConfig {
     return template;
   }
 
+  /**
+   * 使用spring 缓存的时候,redis序列化器需要更改
+   * 
+   * @param template
+   */
   private void setSerializer(StringRedisTemplate template) {
     @SuppressWarnings({"rawtypes", "unchecked"})
     Jackson2JsonRedisSerializer jackson2JsonRedisSerializer =
