@@ -265,7 +265,7 @@ public class RedPacketServiceImpl extends BaseService implements IRedPacketServi
       // 锁住指定红包
       lock = redissonClient.getLock("redPacket:lock:" + redPacketId);
 
-      // 尝试加锁，最多等待5秒，上锁以后5秒自动解锁(避免死锁)
+      // 尝试加锁，最多等待5秒，上锁以后5秒自动解锁(避免死锁) todo 有没有优化方式?
       if (lock.tryLock(5, 5, TimeUnit.SECONDS)) {
         byte[] queueResultKey = getRedPacketQueueResultKey(redPacketId);
         // 避免重复领取(加入分布式锁,保证操作原子性)
@@ -316,7 +316,7 @@ public class RedPacketServiceImpl extends BaseService implements IRedPacketServi
     // 剩余红包数key
     byte[] redPacketSizeKey = getRedPacketSizeKey(redPacketId);
 
-    // 1 开始拆红包,查询红包,生成随机金额
+    // 1 开始拆红包,查询红包,生成随机金额  TODO 讨论余额保存到redis???(有意愿)
     RedPacket redPacket = redPacketMapper.selectById(redPacketId);
 
     // 2 避免超额消费
@@ -347,6 +347,7 @@ public class RedPacketServiceImpl extends BaseService implements IRedPacketServi
         detail.setRedPacketId(redPacketId);
         detail.setCreateDate(new Timestamp(System.currentTimeMillis()));
         detail.setNickName(nickName);
+        //todo 红包Id+用户Id 设置唯一索引
         int detailResult = redPacketDetailMapper.insert(detail);
         if (detailResult > 0) {
           // 5 减少库存数
