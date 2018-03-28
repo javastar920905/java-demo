@@ -1,14 +1,18 @@
 package com.javastar920905.service.pay;
 
 import java.sql.Timestamp;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.javastar920905.config.RabbitConfig;
 import com.javastar920905.config.RedisConfig;
 import com.javastar920905.constant.CommonConstants;
 import com.javastar920905.outer.spring.mq.RabbitMessageProducer;
+import com.javastar920905.util.RedPacketUtil;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.cache.annotation.Cacheable;
@@ -26,6 +30,7 @@ import com.javastar920905.outer.spring.SpringContextUtil;
 import com.javastar920905.util.BeanUtil;
 import com.javastar920905.util.ByteUtil;
 import com.javastar920905.util.MoneyUtil;
+import org.springframework.util.CollectionUtils;
 
 
 /**
@@ -362,7 +367,7 @@ public class RedPacketServiceImpl extends BaseService implements IRedPacketServi
    */
   @Override
   /**
-   *TODO  默认缓存key以"方法名+参数值"区分 (getRedPacketDetailList+参数1值)
+   * TODO 默认缓存key以"方法名+参数值"区分 (getRedPacketDetailList+参数1值)
    */
   @Cacheable(value = RedisConfig.Cachekey.CACHE_REDPACKET_DETAIL, key = "#root.methodName+#p0")
   public JSONObject getRedPacketDetailList(String redPacketId) {
@@ -371,7 +376,43 @@ public class RedPacketServiceImpl extends BaseService implements IRedPacketServi
     detailEntityWrapper.setEntity(new RedPacketDetail());
     detailEntityWrapper.where("red_packet_id={0}", redPacketId);
     List<RedPacketDetail> detailList = redPacketDetailMapper.selectList(detailEntityWrapper);
+
+    JSONArray resultArray = new JSONArray();
+    if (detailList != null) {
+
+      // TODO 判断红包已经抢完后,计算手气最佳 迭代代码直接参考 Collections.max(detailList)
+      if (RedPacketUtil.getRedPacketRemain(redPacketId).get() == 0) {
+        Iterator<RedPacketDetail> i = detailList.iterator();
+        RedPacketDetail candidate = i.next();
+        resultArray.add(parseRedPacketDetailToJson(candidate));
+
+        while (i.hasNext()) {
+          RedPacketDetail next = i.next();
+          resultArray.add(parseRedPacketDetailToJson(next));
+          if (next.getMoney().compareTo(candidate.getMoney()) > 0) {
+            candidate = next;
+          }
+        }
+        // 手气最佳,设置lucky 字段
+        int index = detailList.indexOf(candidate);
+        JSONObject luckJson = JSONUtil.parseObjectToJSONObject(candidate, null);
+        luckJson.put("lucky", true);
+        resultArray.set(index, luckJson);
+      } else {
+        detailList.stream().forEach(item -> resultArray.add(parseRedPacketDetailToJson(item)));
+      }
+      detailJson.put("detailList", resultArray);
+    } else {
+      detailJson.put("detailList", null);
+    }
+
     detailJson.put("detailList", detailList);
     return detailJson;
+  }
+
+  private JSONObject parseRedPacketDetailToJson(RedPacketDetail redPacketDetail) {
+    JSONObject luckJson = JSONUtil.parseObjectToJSONObject(redPacketDetail, null);
+    // todo 加载用户头像,昵称信息
+    return luckJson;
   }
 }
