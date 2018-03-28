@@ -381,6 +381,7 @@ public class RedPacketServiceImpl extends BaseService implements IRedPacketServi
     if (detailList != null) {
 
       // TODO 判断红包已经抢完后,计算手气最佳 迭代代码直接参考 Collections.max(detailList)
+      // 测试时 用RedPacketUtil.getRedPacketRemain(redPacketId).set(0) 设置剩余红包数为0即可
       if (RedPacketUtil.getRedPacketRemain(redPacketId).get() == 0) {
         Iterator<RedPacketDetail> i = detailList.iterator();
         RedPacketDetail candidate = i.next();
