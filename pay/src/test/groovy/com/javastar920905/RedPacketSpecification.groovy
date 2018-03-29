@@ -26,11 +26,9 @@ import java.util.concurrent.CountDownLatch
 @See("com.javastar920905.DetachedJavaConfig 查看主配置的参考信息")
 @Title("红包功能集成测试")
 @Stepwise
-class RedPacketSpecification extends DetachedJavaConfig {
+class RedPacketSpecification extends BaseDetachedConfig {
     @Shared
     RedisConnection connection = null
-    @Shared
-    boolean firstCleanRedisDb = false
 
     def setup() {
         connection = RedisFactory.getConnection()
@@ -44,11 +42,10 @@ class RedPacketSpecification extends DetachedJavaConfig {
     }
 
     def "发红包功能测试"() {
-        if (firstCleanRedisDb == false) {
+        if (initDB) {
             // "删除当前数据库db0的所有key,确认redis中没有脏数据"
-            firstCleanRedisDb = true
             connection.flushDb()
-            assert connection.exists(redPacketServiceSpy.getRedPacketKey(redPacketId)) == false
+            assert connection.exists(redPacketService.getRedPacketKey(redPacketId)) == false
         }
         given: "设置红包信息(金额,数目等)"
         RedPacket redPacket = new RedPacket()
@@ -60,13 +57,13 @@ class RedPacketSpecification extends DetachedJavaConfig {
         redPacket.setExpireTime(expireTime)
 
         when: "发送红包"
-        JSONObject jsonObject = redPacketServiceSpy.giveRedPacket(redPacket)
+        JSONObject jsonObject = redPacketService.giveRedPacket(redPacket)
 
         then: "发送红包成功,生成库存信息!"
-        assert connection.get(redPacketServiceSpy.getRedPacketSizeKey(redPacket.getId())) != null
-        assert connection.lLen(redPacketServiceSpy.getRedPacketKey(redPacket.getId())) == size
+        assert connection.get(redPacketService.getRedPacketSizeKey(redPacket.getId())) != null
+        assert connection.lLen(redPacketService.getRedPacketKey(redPacket.getId())) == size
         assert jsonObject.getBoolean(CommonConstants.key.result.name()) == true
-        assert connection.exists(redPacketServiceSpy.getRedPacketKey(redPacketId)) == true
+        assert connection.exists(redPacketService.getRedPacketKey(redPacketId)) == true
         RedPacket dbRedPacket = redPacketMapper.selectById(redPacketId)
         assert dbRedPacket != null
         assert dbRedPacket.getPacketSize() == size
@@ -79,9 +76,9 @@ class RedPacketSpecification extends DetachedJavaConfig {
         }*/
 
         where: "给出以下红包信息"
-        redPacketId | userId  | money | size | createDate                                | expireTime
-        "1"         | "ouzhx" | 10d   | 10   | new Timestamp(System.currentTimeMillis()) | new Timestamp(System.currentTimeMillis() + 1000000000)
-        "2"         | "ouzhx" | 5d    | 5    | new Timestamp(System.currentTimeMillis()) | new Timestamp(System.currentTimeMillis() + 1000000000)
+        initDB | redPacketId | userId  | money | size | createDate                                | expireTime
+        true   | "1"         | "ouzhx" | 10d   | 10   | new Timestamp(System.currentTimeMillis()) | new Timestamp(System.currentTimeMillis() + 1000000000)
+        false  | "2"         | "ouzhx" | 5d    | 5    | new Timestamp(System.currentTimeMillis()) | new Timestamp(System.currentTimeMillis() + 1000000000)
     }
 
     @Ignore("TODO ")
@@ -95,7 +92,7 @@ class RedPacketSpecification extends DetachedJavaConfig {
         CountDownLatch countDownLatch = new CountDownLatch(robNums);
         for (int i = 0; i < robNums; i++) {
             final String uid = "" + i
-            Thread thread = new RobThread(uid, redPacketId, countDownLatch, redPacketServiceSpy)
+            Thread thread = new RobThread(uid, redPacketId, countDownLatch, redPacketService)
             thread.start()
         }
 
@@ -134,15 +131,15 @@ class RedPacketSpecification extends DetachedJavaConfig {
             assert sumMoeny <= redPacket.getMoney()
         }
 
-        byte[] size = connection.get(redPacketServiceSpy.getRedPacketSizeKey(redPacketId))
+        byte[] size = connection.get(redPacketService.getRedPacketSizeKey(redPacketId))
         //剩余红包数
         int redPacketSize = BeanUtil.byte2Int(size)
         //已抢红包数
-        Long queueResultSize = connection.sCard(redPacketServiceSpy.getRedPacketQueueResultKey(redPacketId))
+        Long queueResultSize = connection.sCard(redPacketService.getRedPacketQueueResultKey(redPacketId))
         if (redPacketSize == 0) {
             //红包抢完的情况(红包余额0,库存空,,消费数==红包数)
             assert redPacket.getRestMoney() == 0
-            assert connection.exists(redPacketServiceSpy.getRedPacketKey(redPacketId)) == false
+            assert connection.exists(redPacketService.getRedPacketKey(redPacketId)) == false
             //总红包数=已抢红包数
             assert queueResultSize == redPacket.getPacketSize()
         } else {
@@ -163,7 +160,7 @@ class RedPacketSpecification extends DetachedJavaConfig {
 
     @IgnoreRest
     def "红包领取详情+缓存"() {
-        given: "清除缓存,查询指定红包详情"
+        when: "给出模拟红包数据"
         def redPacketId = "1"
         byte[] redPacketDetailKey = ("getRedPacketDetailList" + redPacketId).getBytes();
         //sql添加需要的数据
@@ -171,18 +168,17 @@ class RedPacketSpecification extends DetachedJavaConfig {
                 + "VALUES ('1', '1','openId1',0.01, '2018-03-27 11:26:05')," +
                 "('2', '1','openId1',0.01,'2018-03-27 11:26:05')" +
                 ";");
-        if (firstCleanRedisDb == false) {
-            // "删除当前数据库db0的所有key,确认redis中没有脏数据"
-            firstCleanRedisDb = true
-            connection.flushDb()
-            assert connection.exists(redPacketDetailKey) == false
-        }
+        then: "清除redis 缓存"
+        connection.flushDb()
+        assert connection.exists(redPacketDetailKey) == false
 
+        then: "执行数据查询"
+        JSONObject detailList = redPacketService.getRedPacketDetailList(redPacketId)
+        JSONArray array = detailList.getJSONArray("detailList")
 
-        expect: "加载到红包详情,并且已经缓存到redis"
-        JSONObject detailList = redPacketServiceSpy.getRedPacketDetailList(redPacketId)
-        JSONArray array = detailList.getJSONArray("detailList");
+        then: "加载到红包详情"
         assert array != null && array.size() > 0
+        then: "已经缓存到redis"
         assert connection.exists(redPacketDetailKey) == true
     }
 

@@ -7,9 +7,7 @@ import com.javastar920905.service.pay.RedPacketServiceImpl
 import org.spockframework.spring.xml.SpockMockFactoryBean
 import org.springframework.beans.factory.FactoryBean
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.FilterType
 import spock.mock.DetachedMockFactory
 
 /**
@@ -25,13 +23,12 @@ import spock.mock.DetachedMockFactory
  * 如何为spring 测试框架注入测试用的mock对象而不是真实对象?(选择性扫描对象)
  */
 @Configuration
-//(持久层都是mock对象可以不扫描)
-@ComponentScan(value = "com.javastar920905", excludeFilters = @ComponentScan.Filter(type = FilterType.ANNOTATION, value = Configuration.class))
 class MockBeanConfig {
     // DetachedMockFactory and the SpockMockFactoryBean spring 集成提供的对象
     def mockFactory = new DetachedMockFactory()
 
-    @Bean
+    //TODO 启动缺少的不必要对象 都可以在这里mock
+   /* @Bean
     IRedPacketService redPacketServiceSpy() {
         return mockFactory.Spy(RedPacketServiceImpl)
     }
@@ -59,5 +56,5 @@ class MockBeanConfig {
     @Bean
     FactoryBean<IRedPacketService> alternativeMock() {
         return new SpockMockFactoryBean(IRedPacketService)
-    }
+    }*/
 }

@@ -33,13 +33,12 @@ import org.springframework.transaction.annotation.EnableTransactionManagement
  * @author ouzhx on 2017/5/19
  */
 @Configuration
-// spring bean 扫描注册
-@ComponentScan(value = "com.javastar920905", excludeFilters = @ComponentScan.Filter(type = FilterType.ANNOTATION, value = Configuration.class))
-// todo 扫描首页mapper 接口,该包下面的mapper接口都不需要@mapper标识了
-@MapperScan("com.javastar920905.mapper")
-@EnableTransactionManagement
-@Import([RedisConfig.class, PropertiesConfig.class, RabbitConfig.class])
 @ImportResource(locations = "ApplicationContent.xml")
+@EnableTransactionManagement
+// todo 扫描首页mapper 接口,该包下面的mapper接口都不需要@mapper标识了(mybatis  plus)
+@MapperScan("com.javastar920905.mapper")
+//这里才能扫描到所有Service和mapper 对象
+@ComponentScan("com.javastar920905")
 class MybatisH2Config {
 
     /**

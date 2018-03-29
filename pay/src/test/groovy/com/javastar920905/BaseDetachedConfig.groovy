@@ -1,13 +1,19 @@
 package com.javastar920905
 
+import com.javastar920905.config.PropertiesConfig
+import com.javastar920905.config.RabbitConfig
+import com.javastar920905.config.RedisConfig
 import com.javastar920905.mapper.RedPacketDetailMapper
 import com.javastar920905.mapper.RedPacketMapper
-import com.javastar920905.outer.redis.RedisFactory
 import com.javastar920905.service.pay.IRedPacketService
 import groovy.sql.Sql
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.redis.connection.RedisConnection
+import org.springframework.context.annotation.ComponentScan
+import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.FilterType
+import org.springframework.context.annotation.Import
 import org.springframework.data.redis.core.StringRedisTemplate
+import org.springframework.stereotype.Controller
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.support.AnnotationConfigContextLoader
@@ -150,12 +156,23 @@ import spock.lang.Specification
   // 8 spring 集成 http://spockframework.org/spock/docs/1.1/all_in_one.html#_spring_module
 
  */
-/**第一种方式ContextConfiguration 是引入MockBeanConfig中的mock配置类的,所有持久层mapper 都是mock对象**/
-//@ContextConfiguration(loader = AnnotationConfigContextLoader, classes = [RedisConfig.class, RabbitConfig.class, MockBeanConfig.class])
-/**现在用的第二种方式   是不引入mock,使用h2替换mysql,直接做隔离测试(个人觉得第二种种比较方便)**/
+/**使用h2替换mysql,直接做隔离测试**/
+@Configuration
 @ContextConfiguration(loader = AnnotationConfigContextLoader, classes = [MybatisH2Config.class])
+//把 ignore的配置手动注册,import 需要在@ComponentScan.Filter之前定义(剩余需要注册的非必要对象,可以mock掉)
+//, PropertiesConfig.class, RabbitConfig.class rabbit mq测试时用不到就不用引入了
+@Import([MockBeanConfig.class, RedisConfig.class])
 @ActiveProfiles("test")
-class DetachedJavaConfig extends Specification {
+// spring bean 扫描注册
+@ComponentScan(value = "com.javastar920905", excludeFilters =
+        [@ComponentScan.Filter(type = FilterType.ANNOTATION, value = Configuration.class),
+                @ComponentScan.Filter(type = FilterType.ANNOTATION, value = Controller.class),
+                @ComponentScan.Filter(type = FilterType.REGEX,
+                        pattern = ["com.javastar920905.config.MybatisConfig",
+                                "com.javastar920905.listener.*"
+                        ])
+        ])
+class BaseDetachedConfig extends Specification {
     @Shared
             sql = Sql.newInstance("jdbc:h2:mem:paydb", "org.h2.Driver")
 
@@ -166,9 +183,7 @@ class DetachedJavaConfig extends Specification {
     }
     //使用spy对象前请三思(think twice before doing sth),基于真实对象
     @Autowired
-    IRedPacketService redPacketServiceSpy
-    @Autowired
-    StringRedisTemplate stringRedisTemplate
+    IRedPacketService redPacketService
     /**
      * 当使用MybatisH2Config时 会自动注入h2 mapper对象
      * 当使用MockBeanConfig时  自动注入mock后的mapper 对象
