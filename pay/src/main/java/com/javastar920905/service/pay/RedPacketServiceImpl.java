@@ -15,6 +15,7 @@ import com.javastar920905.outer.spring.mq.RabbitMessageProducer;
 import com.javastar920905.util.RedPacketUtil;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.connection.RedisConnection;
@@ -250,6 +251,8 @@ public class RedPacketServiceImpl extends BaseService implements IRedPacketServi
   /**
    * 抢红包实现方式2
    *
+   * TODO 调整(打开红包的时候,只从redis中判断红包状态,并不扣除库存 ,"开红包步骤才扣库存")
+   * 
    * @param openId 微信标识
    * @param redPacketId 红包Id
    * @return
@@ -305,18 +308,22 @@ public class RedPacketServiceImpl extends BaseService implements IRedPacketServi
   /**
    * 拆红包2
    *
+   * 失效对于当前红包的领取详情缓存
+   * 
    * @param openId
    * @param redPacketId
    * @return
    */
   @Transactional(rollbackFor = Exception.class)
   @Override
+  @CacheEvict(value = RedisConfig.Cachekey.CACHE_REDPACKET_DETAIL,
+      key = "'cache:redPacket:detail'+#redPacketId")
   public JSONObject oepnRedPacket2(String openId, String nickName, String redPacketId,
       RedisConnection connection) {
     // 剩余红包数key
     byte[] redPacketSizeKey = getRedPacketSizeKey(redPacketId);
 
-    // 1 开始拆红包,查询红包,生成随机金额  TODO 讨论余额保存到redis???(有意愿)
+    // 1 开始拆红包,查询红包,生成随机金额 TODO 讨论余额保存到redis???(有意愿)
     RedPacket redPacket = redPacketMapper.selectById(redPacketId);
 
     // 2 避免超额消费
@@ -347,7 +354,7 @@ public class RedPacketServiceImpl extends BaseService implements IRedPacketServi
         detail.setRedPacketId(redPacketId);
         detail.setCreateDate(new Timestamp(System.currentTimeMillis()));
         detail.setNickName(nickName);
-        //todo 红包Id+用户Id 设置唯一索引
+        // todo 红包Id+用户Id 设置唯一索引
         int detailResult = redPacketDetailMapper.insert(detail);
         if (detailResult > 0) {
           // 5 减少库存数
@@ -370,7 +377,8 @@ public class RedPacketServiceImpl extends BaseService implements IRedPacketServi
   /**
    * TODO 默认缓存key以"方法名+参数值"区分 (getRedPacketDetailList+参数1值)
    */
-  @Cacheable(value = RedisConfig.Cachekey.CACHE_REDPACKET_DETAIL, key = "#root.methodName+#p0")
+  @Cacheable(value = RedisConfig.Cachekey.CACHE_REDPACKET_DETAIL,
+      key = "'cache:redPacket:detail'+#p0")
   public JSONObject getRedPacketDetailList(String redPacketId) {
     JSONObject detailJson = new JSONObject();
     EntityWrapper<RedPacketDetail> detailEntityWrapper = new EntityWrapper();

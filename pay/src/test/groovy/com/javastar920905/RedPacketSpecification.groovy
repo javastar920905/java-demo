@@ -3,6 +3,7 @@ package com.javastar920905
 import cn.hutool.json.JSONArray
 import com.alibaba.fastjson.JSONObject
 import com.baomidou.mybatisplus.mapper.EntityWrapper
+import com.javastar920905.config.RedisConfig
 import com.javastar920905.constant.CommonConstants
 import com.javastar920905.entity.domain.RedPacket
 import com.javastar920905.entity.domain.RedPacketDetail
@@ -162,7 +163,7 @@ class RedPacketSpecification extends BaseDetachedConfig {
     def "红包领取详情+缓存"() {
         when: "给出模拟红包数据"
         def redPacketId = "1"
-        byte[] redPacketDetailKey = ("getRedPacketDetailList" + redPacketId).getBytes();
+        byte[] redPacketDetailKey = (RedisConfig.Cachekey.CACHE_REDPACKET_DETAIL + redPacketId).getBytes();
         //sql添加需要的数据
         sql.execute("INSERT INTO `red_packet_detail`(`id`, `red_packet_id`, `oepn_id`,`money`,`create_date`)"
                 + "VALUES ('1', '1','openId1',0.01, '2018-03-27 11:26:05')," +

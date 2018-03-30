@@ -7,11 +7,14 @@
 
     <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
         <property name="driverClassName" value="org.h2.Driver"/>
-        <property name="url" value="jdbc:h2:mem:paydb;MODE=MYSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE"/>
+        <!--DB_CLOSE_DELAY=60 最后一个数据库连接断开后 60秒才关闭数据库,避免多线程测试时,报数据库连接断开的错误-->
+        <property name="url"
+                  value="jdbc:h2:mem:paydb;MODE=MYSQL;DB_CLOSE_DELAY=60;DB_CLOSE_ON_EXIT=true"/>
     </bean>
     <jdbc:initialize-database data-source="dataSource"
                               enabled="true">
         <!-- 系统所用的数据库 -->
         <jdbc:script location="classpath:db/paydb-table.sql"/>
+        <jdbc:script location="classpath:db/paydb-table-data.sql"/>
     </jdbc:initialize-database>
 </beans>

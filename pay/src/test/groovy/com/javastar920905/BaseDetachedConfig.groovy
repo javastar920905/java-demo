@@ -20,6 +20,9 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader
 import spock.lang.Shared
 import spock.lang.Specification
 
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+
 /**
  * @author ouzhx on 2018/3/19.
  *
@@ -194,4 +197,7 @@ class BaseDetachedConfig extends Specification {
     @Autowired
     RedPacketDetailMapper redPacketDetailMapper
 
+    //多线程使用文档总结  http://note.youdao.com/noteshare?id=c1aa1a8700d550f5c2294d49c05d1b03&sub=CBCB97BFFB1D49B5A26E27E3E0A60A96
+    @Shared
+    ExecutorService threadPoolExecutor = Executors.newCachedThreadPool()
 }
