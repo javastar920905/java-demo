@@ -31,6 +31,10 @@ import com.javastar920905.concurent.threadentity.MyProcedure;
  *          SynchronousQueue (是一个特殊的队列，它的内部同时只能够容纳单个元素。如果该队列已
  *         有一元素的话，试图向队列中插入一个新元素的线程将会阻塞，直到另一个线程将该元素从 队列中抽走。同样，如果该队列为空，试图向队列中抽取一个元素的线程将会阻塞，直到另
  *         一个线程向队列中插入了一条新的元素。)
+ * 
+ *         https://www.cnblogs.com/KingIceMou/p/8075343.html
+ *         先进先出（FIFO）：先插入的队列的元素也最先出队列，类似于排队的功能。从某种程度上来说这种队列也体现了一种公平性。
+ *         后进先出（LIFO）：后插入队列的元素最先出队列，这种队列优先处理最近发生的事件。
  */
 public class BlockingQueueDemo {
 
