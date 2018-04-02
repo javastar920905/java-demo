@@ -2,6 +2,7 @@
     * 开发工具快速配置
     * 专门用于规范开发流程
     * 提供开发效率
+    * jdk 包学习示例
     
 
 ## 开发工具配置
@@ -27,3 +28,6 @@
     * 阿里开发规约插件 http://note.youdao.com/noteshare?id=8314abb287e52f4afc77811bb504b163&sub=139162D4E85F4BEF84D9B524C243FCCF
     * 添加jrebel 热部署插件 http://note.youdao.com/noteshare?id=899c4dddfccb1da94eaf61be7d03b1d4&sub=201C428B132C411C97DF80F37B9EEE83
 
+### jdk 基础包学习示例  http://note.youdao.com/noteshare?id=dccfbfcb5e7273681a693406094fdb68
+    * concurrent 包 
+    http://note.youdao.com/noteshare?id=c1aa1a8700d550f5c2294d49c05d1b03&sub=CBCB97BFFB1D49B5A26E27E3E0A60A96
