@@ -13,6 +13,7 @@ import java.util.Random;
 public class MoneyUtil {
   private static final Formatter FORMATTER = new Formatter();
   private static final Random RANDOM = new Random();
+  private static BigDecimal decimal100 = new BigDecimal(100);
 
   /**
    * 生成min到max范围的浮点数
@@ -59,4 +60,36 @@ public class MoneyUtil {
     // String.format("%.2f", value).toString()
     return FORMATTER.format(format, number).toString();
   }
+
+  /**
+   * 将分为单位的转换为元 （除100） 保留两位小数 150->1.50
+   *
+   * @param amount
+   * @return
+   * @throws Exception
+   */
+  public static String changeF2Y(Integer amount) {
+    return String.format("%.2f", BigDecimal.valueOf(amount).divide(decimal100));
+  }
+
+  /**
+   * 保留2位小数但不会自动补0 150->1.;5 151->1.51
+   * 
+   * @param amount
+   * @return
+   */
+  public static String changeF2Y1(Integer amount) {
+    return amount / 100.00 + "";
+  }
+
+  /**
+   * 将元为单位的转换为分 （乘100）
+   *
+   * @param amount
+   * @return
+   */
+  public static Integer changeY2F(Long amount) {
+    return BigDecimal.valueOf(amount).multiply(decimal100).intValue();
+  }
+
 }
