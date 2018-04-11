@@ -1,2 +1,2 @@
 rootProject.name = 'java-demo'
-include('api','web','web2-sso','html2pdf','rule-engine','xf-voice','tools','doc','pay','entity')
+include('api','web','web2-sso','html2pdf','rule-engine','xf-voice','tools','doc','pay','entity','spider')

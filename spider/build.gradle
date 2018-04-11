@@ -1,0 +1,31 @@
+
+buildscript {
+    ext {
+        springBootVersion = '1.5.9.RELEASE'
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+apply plugin: "org.springframework.boot"
+
+jar {
+    archiveName = 'spider.jar'
+}
+
+repositories {
+    mavenCentral()
+}
+dependencies {
+    compile project(':tools')
+
+    compile('org.springframework.boot:spring-boot-starter')
+    compile("org.springframework.boot:spring-boot-starter-web")
+    compile("org.springframework.boot:spring-boot-starter-thymeleaf")
+    compile("org.springframework.boot:spring-boot-starter-data-redis")
+    compile("org.springframework.boot:spring-boot-starter-data-redis")
+    compile group: 'org.jsoup', name: 'jsoup', version: '1.11.2'
+}
