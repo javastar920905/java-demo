@@ -62,4 +62,28 @@ public class FileDemo {
       e.printStackTrace();
     }
   }
+
+  /**
+   * 修改指定文件夹下 所有文件名称
+   */
+  @Test
+  public void modifyDirectionFilesName() {
+    String path = "E:\\bgwall\\BT";
+
+    File dir = new File(path);
+    if (dir.isDirectory()) {
+      File[] files = dir.listFiles();
+
+      // 批量修改文件名
+      for (File file : files) {
+        // 取后缀名前面部分
+        String oldFileName = file.getName().split("\\.")[0];
+        // 文件名删除"中文"并以后缀名".jpg"结尾
+        String newFileName = oldFileName.replace("分层", "") + ".jpg";
+
+        File newFile = new File(path + "\\" + newFileName);
+        file.renameTo(newFile);
+      }
+    }
+  }
 }
