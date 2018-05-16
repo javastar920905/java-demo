@@ -24,4 +24,5 @@ dist/
 nbdist/
 .nb-gradle/
 /tools/local.properties
+/tools/local-config.properties
 !/tools/local.properties
