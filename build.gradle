@@ -11,6 +11,7 @@ subprojects {
 
     repositories {
         mavenCentral()
+        jcenter()
     }
 
     ext {
@@ -68,6 +69,12 @@ subprojects {
 
         // dependencies used by examples in this project
         testRuntime "com.h2database:h2:1.4.182"
+
+        //上传jar 到jcenter()
+        compile project(':CommonUtilLibrary')
+        classpath 'com.android.tools.build:gradle:2.1.0'
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.3'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.0'
     }
 
     //解决提示"GBK"编码错误
