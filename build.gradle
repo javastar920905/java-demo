@@ -1,3 +1,19 @@
+//上传jar到jcenter  参考文档 https://github.com/bintray/bintray-examples/blob/master/gradle-bintray-plugin-examples/configurations-modules-example/build.gradle
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3"
+    }
+}
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+apply plugin: 'java'
+
+
+
 version = "1.0"
 subprojects {
     apply plugin: 'java'
@@ -36,7 +52,7 @@ subprojects {
         compile.exclude module: "slf4j-log4j12"
     }
 
-    dependencies{
+    dependencies {
         //lombok
         compile("org.projectlombok:lombok:1.16.18")
         //logback 依赖
@@ -64,8 +80,10 @@ subprojects {
 
         // optional dependencies for using Spock
         testCompile "org.hamcrest:hamcrest-core:1.3" // only necessary if Hamcrest matchers are used
-        testRuntime "net.bytebuddy:byte-buddy:1.6.5"          // allows mocking of classes (in addition to interfaces)
-        testRuntime "org.objenesis:objenesis:2.5.1"    // allows mocking of classes without default constructor (together with CGLIB)
+        testRuntime "net.bytebuddy:byte-buddy:1.6.5"
+        // allows mocking of classes (in addition to interfaces)
+        testRuntime "org.objenesis:objenesis:2.5.1"
+        // allows mocking of classes without default constructor (together with CGLIB)
 
         // dependencies used by examples in this project
         testRuntime "com.h2database:h2:1.4.182"
@@ -82,6 +100,40 @@ subprojects {
     }
 }
 
+
+//上传jar到jcenter
+publishing {//
+    publications {
+        MyPublication(MavenPublication) {
+            groupId 'com.javastar920905'
+            artifactId 'tools'
+            version '1.0.0.final'
+            artifact("tools/build/libs/tools.jar")
+        }
+    }
+}
+//user=javastar920905 key 需要登录获取 https://bintray.com/profile/edit
+bintray {
+    user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
+    key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')/
+    pkg {
+        repo = 'common'
+        name = 'tools'
+        licenses = ['Apache-2.0']
+        userOrg = 'javastar920905'
+        vcsUrl = 'https://github.com/javastar920905/java-demo.git'
+        publicDownloadNumbers = true
+        version {
+            name = '1.0.0.final'
+            desc = 'tools upload by gradle test'
+            released = new Date()
+            vcsTag = 'master'
+            //attributes = ['gradle-plugin': 'com.use.less:com.use.less.gradle:gradle-useless-plugin']
+        }
+    }
+    configurations = ['archives'] //依赖apply plugin: 'java'
+    publications = ['MyPublication']
+}
 
 /*findMainClass.doFirst {
     File localFile = file("build/classes/main/com/rencaijia/local/LocalConfig.class")
