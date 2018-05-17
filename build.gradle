@@ -1,4 +1,5 @@
 //上传jar到jcenter  参考文档 https://github.com/bintray/bintray-examples/blob/master/gradle-bintray-plugin-examples/configurations-modules-example/build.gradle
+// 先删除原来版本 https://bintray.com/javastar920905/common/tools  然后上传: gradle bintrayUpload
 buildscript {
     repositories {
         jcenter()
@@ -10,9 +11,10 @@ buildscript {
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 apply plugin: 'java'
+//gradle 上传jar包时 会默认使用当前version变量值 统一设置jcenter()版本
+version = "1.2"
 
 
-version = "1.0"
 subprojects {
     apply plugin: 'java'
     apply plugin: "groovy"
@@ -98,8 +100,7 @@ subprojects {
     }
 }
 
-//统一设置jar版本
-def toolsJarVersion = "1.0"
+def toolsJarVersion = version
 //上传jar到jcenter
 publishing {
     publications {

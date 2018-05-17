@@ -49,7 +49,7 @@ public class StringUtil {
   /**
    * 获取精确到秒的时间戳 (java的时间戳是精确到毫秒的,精确到秒只需将最后3位去掉)
    */
-  public static String getTimeStamp(Throwable e) {
+  public static String getTimeStamp() {
     String string = String.valueOf(System.currentTimeMillis());
     string = string.substring(0, string.length() - 3);
     return string;
