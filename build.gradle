@@ -8,10 +8,8 @@ buildscript {
     }
 }
 apply plugin: 'com.jfrog.bintray'
-apply plugin: 'maven'
 apply plugin: 'maven-publish'
 apply plugin: 'java'
-
 
 
 version = "1.0"
@@ -100,39 +98,43 @@ subprojects {
     }
 }
 
-
+//统一设置jar版本
+def toolsJarVersion = "1.0"
 //上传jar到jcenter
-publishing {//
+publishing {
     publications {
-        MyPublication(MavenPublication) {
-            groupId 'com.javastar920905'
-            artifactId 'tools'
-            version '1.0.0.final'
-            artifact("tools/build/libs/tools.jar")
+        tools(MavenPublication) {
+            groupId = 'com.javastar920905'
+            artifactId = 'tools'
+            version toolsJarVersion
+            artifact ("tools/build/libs/tools.jar")
         }
     }
 }
-//user=javastar920905 key 需要登录获取 https://bintray.com/profile/edit
 bintray {
-    user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
-    key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
+    user = "javastar920905"
+    key = "da1ce09cc0ece288781de392e893288550735996" //key 需要登录获取 https://bintray.com/profile/edit
     pkg {
-        repo = 'common'
+        repo = 'common' //https://bintray.com/javastar920905  自己创建的repository,不存在的需要手动创建
         name = 'tools'
         licenses = ['Apache-2.0']
         userOrg = 'javastar920905'
-        vcsUrl = 'https://github.com/javastar920905/java-demo.git'
+        vcsUrl = 'https://github.com/javastar920905/java-demo.git'  //项目git地址
         publicDownloadNumbers = true
+        githubRepo = 'https://github.com/javastar920905/java-demo' //Optional Github repository
+        githubReleaseNotesFile = 'readme.md' //Optional Github readme file
         version {
-            name = '1.0.0.final'
+            name = toolsJarVersion
             desc = 'tools upload by gradle test'
             released = new Date()
             vcsTag = 'master'
-            //attributes = ['gradle-plugin': 'com.use.less:com.use.less.gradle:gradle-useless-plugin']
+            attributes = ['gradle-plugin': 'com.use.less:com.use.less.gradle:gradle-useless-plugin']
         }
     }
     configurations = ['archives'] //依赖apply plugin: 'java'
-    publications = ['MyPublication']
+    publications = ['tools']
+    publish = true
+    override = true
 }
 
 /*findMainClass.doFirst {
