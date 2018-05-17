@@ -19,7 +19,7 @@ import redis.clients.jedis.JedisPoolConfig;
  */
 @Configuration
 @EnableRedisHttpSession(redisNamespace = "javastar", maxInactiveIntervalInSeconds = 60 * 60 * 4)
-public class RedisConfig {
+public class WebRedisConfig {
   @Bean
   public JedisPoolConfig jedisPoolConfig() {
     JedisPoolConfig config = new JedisPoolConfig();

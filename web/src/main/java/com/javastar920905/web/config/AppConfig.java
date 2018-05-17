@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Import;
  * @author chenjun
  */
 @SpringBootApplication(scanBasePackages = "com.javastar920905")
-@Import({RedisConfig.class, ScheduleConfig.class, SwaggerConfig.class})
+@Import({WebRedisConfig.class, ScheduleConfig.class, SwaggerConfig.class})
 public class AppConfig {
 
 

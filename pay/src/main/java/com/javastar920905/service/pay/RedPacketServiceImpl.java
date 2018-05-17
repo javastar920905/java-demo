@@ -91,7 +91,7 @@ public class RedPacketServiceImpl extends BaseService implements IRedPacketServi
             }
             lock.unlock();
             return buildSuccessResult(
-                "发送红包成功!" + JSONUtil.parseObjectToJSONObject(redPacket, null).toJSONString());
+                "发送红包成功!" + JSONUtil.parseObjectToJSONObject(redPacket).toJSONString());
           } else {
             return buildfailResult("已扣款,但是生成红包信息失败");
           }
@@ -405,7 +405,7 @@ public class RedPacketServiceImpl extends BaseService implements IRedPacketServi
         }
         // 手气最佳,设置lucky 字段
         int index = detailList.indexOf(candidate);
-        JSONObject luckJson = JSONUtil.parseObjectToJSONObject(candidate, null);
+        JSONObject luckJson = JSONUtil.parseObjectToJSONObject(candidate);
         luckJson.put("lucky", true);
         resultArray.set(index, luckJson);
       } else {
@@ -421,7 +421,7 @@ public class RedPacketServiceImpl extends BaseService implements IRedPacketServi
   }
 
   private JSONObject parseRedPacketDetailToJson(RedPacketDetail redPacketDetail) {
-    JSONObject luckJson = JSONUtil.parseObjectToJSONObject(redPacketDetail, null);
+    JSONObject luckJson = JSONUtil.parseObjectToJSONObject(redPacketDetail);
     // todo 加载用户头像,昵称信息
     return luckJson;
   }

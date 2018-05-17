@@ -19,7 +19,7 @@ repositories {
 dependencies {
     compile project(':tools')
     compile project(':api')
-    compile project(':pay')
+    //compile project(':pay') 会有配置类冲突
     compile('org.springframework.boot:spring-boot-starter')
     compile("org.springframework.boot:spring-boot-starter-web")
     compile("org.springframework.boot:spring-boot-starter-thymeleaf")
