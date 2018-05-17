@@ -5,7 +5,7 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 
 /**
- * Spring工具类 Created by chenjun on 2017-03-23.
+ * Spring工具类
  */
 public class SpringUtil {
 
