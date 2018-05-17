@@ -115,7 +115,7 @@ publishing {//
 //user=javastar920905 key 需要登录获取 https://bintray.com/profile/edit
 bintray {
     user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
-    key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')/
+    key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
     pkg {
         repo = 'common'
         name = 'tools'
