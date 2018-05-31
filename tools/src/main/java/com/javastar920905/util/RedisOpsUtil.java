@@ -1,7 +1,5 @@
 package com.javastar920905.util;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * @author ouzhx on 2018/5/23.
  */
@@ -25,6 +23,10 @@ public class RedisOpsUtil {
    */
   public static long getRankScore(int score) {
     return score * SCORE_MOVE + MAX_TIME - System.currentTimeMillis();
+  }
+
+  public static void main(String[] args) {
+    System.out.println();
   }
 
 }

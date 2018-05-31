@@ -1,0 +1,13 @@
+version = "1.0"
+
+jar {
+    archiveName = 'ffmpeg.jar'
+}
+
+
+dependencies {
+    compile("net.bramp.ffmpeg:ffmpeg:0.6.2")
+    compile project(':tools')
+}
+
+
