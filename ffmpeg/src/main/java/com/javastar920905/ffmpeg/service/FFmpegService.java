@@ -28,7 +28,12 @@ public class FFmpegService {
   public static String getClassPath() {
     // 获取classpath 路径 file:/D:/gitrepository/java-demo/ffmpeg/out/production/classes/
     String path = FFmpegService.class.getResource("/").getPath();
-    return path.substring(1, path.length());
+
+    if (System.getProperty("os.name").toLowerCase().contains("linux")) {
+      return path;
+    } else {
+      return path.substring(1, path.length());
+    }
   }
 
   /**
@@ -45,12 +50,16 @@ public class FFmpegService {
     } catch (Exception e) {
       e.printStackTrace();
     }
-    return path.substring(1, path.length());
+    if (System.getProperty("os.name").toLowerCase().contains("linux")) {
+      return path;
+    } else {
+      return path.substring(1, path.length());
+    }
   }
 
 
   /**
-   * 合并多个音频
+   * 合并多个音频(两个音频会重叠)
    * 
    * 使用示例: new FFmpegService().combineAudio("1.mp3", "2.mp3");
    */
@@ -71,6 +80,33 @@ public class FFmpegService {
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
+
+  /**
+   * 拼接多个音频(多个音频顺序拼接播放)
+   *
+   * 使用示例: new FFmpegService().combineAudio("1.mp3", "2.mp3");
+   */
+  public void joinAudio(String... sources) {
+    try {
+      FFmpegBuilder builder = new FFmpegBuilder();
+      StringBuilder sb = new StringBuilder();
+      sb.append("concat:");
+      Arrays.stream(sources).forEach(file -> {
+        sb.append(getFileAbsolutePath(file)).append("|");
+
+      });
+      builder.setInput(sb.toString());
+      builder.overrideOutputFiles(true);
+      builder.addOutput(getClassPath() + "join-output.mp3").done();
+      FFmpegConstants.FFMPEG_EXECUTOR.createJob(builder).run();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  public static void main(String[] args) {
+    new FFmpegService().joinAudio("1.mp3", "2.mp3");
   }
 
 
