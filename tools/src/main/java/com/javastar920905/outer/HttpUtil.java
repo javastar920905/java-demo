@@ -29,7 +29,7 @@ import static net.logstash.logback.marker.Markers.append;
 import static net.logstash.logback.marker.Markers.appendArray;
 
 /**
- * Created by chenjun on 2016/8/11.
+ * Created by  on 2016/8/11.
  */
 public class HttpUtil {
 

@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import java.security.MessageDigest;
 
 /**
- * Created by wuxinlong on 2016/5/13.
+ * Created by  on 2016/5/13.
  */
 public class MD5Util {
 

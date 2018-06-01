@@ -21,7 +21,7 @@ import java.util.Map;
 /**
  * 时间处理通用类
  *
- * Created by chenjun on 2016/8/11.
+ * Created by  on 2016/8/11.
  */
 public class DateUtil extends DateUtils {
 
