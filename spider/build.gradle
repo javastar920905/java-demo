@@ -28,4 +28,5 @@ dependencies {
     compile("org.springframework.boot:spring-boot-starter-data-redis")
     compile("org.springframework.boot:spring-boot-starter-data-redis")
     compile group: 'org.jsoup', name: 'jsoup', version: '1.11.2'
+    compile group: 'us.codecraft', name: 'webmagic-core', version: '0.7.3'
 }

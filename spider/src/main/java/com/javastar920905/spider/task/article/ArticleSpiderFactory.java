@@ -1,6 +1,8 @@
 package com.javastar920905.spider.task.article;
 
+import com.javastar920905.outer.JSONUtil;
 import com.javastar920905.spider.constants.ArticleConstants;
+import com.javastar920905.spider.entity.Article;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -15,7 +17,7 @@ public class ArticleSpiderFactory {
   private String getArticleSourceByUrl(String sourceUrl) {
 
 
-    if (sourceUrl.contains("")) {
+    if (sourceUrl.contains("http://new.qq.com/")) {
       return ArticleConstants.ArticleSource.tencent.name();
     } else if (sourceUrl.contains("")) {
       return ArticleConstants.ArticleSource.toutiao.name();
@@ -49,5 +51,13 @@ public class ArticleSpiderFactory {
       System.err.println("目前不支持此平台");
       return null;
     }
-  };
+  }
+
+  public static void main(String[] args) {
+    String sourceUrl = "http://new.qq.com/omn/FIN2018060400816706";
+    ArticleSpider spider = new ArticleSpiderFactory().getArticleSpider(sourceUrl);
+
+    Article article = spider.getAriticle(sourceUrl);
+    System.out.println(JSONUtil.parseObjectToJSONObject(article).toJSONString());
+  }
 }

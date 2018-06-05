@@ -142,7 +142,18 @@ public class RegexUtil {
    * @return 是否匹配
    * @author chenjun
    */
-  public static boolean matches(String regex,String input){
+  public static boolean matches(String regex, String input) {
     return Pattern.compile(regex).matcher(input).matches();
+  }
+
+
+  /** 清除所有标签 **/
+  public static String trimTag(String str) {
+    return StringUtil.trim(str.replaceAll("<.+?>", ""));
+  }
+
+  /** 清除标签属性 **/
+  public static String trimAttr(String str) {
+    return str.replaceAll("\\w+?=\".+?\"", "");
   }
 }
