@@ -7,7 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * @author ouzhx on 2018/6/1.
  */
-public class ArticleSpiderFactory {
+public abstract class ArticleSpiderFactory {
 
   /**
    * 通过url自动选择 平台实现
@@ -15,7 +15,7 @@ public class ArticleSpiderFactory {
    * @param sourceUrl
    * @return
    */
-  ArticleSpider getArticleSpider(String sourceUrl) {
+  public static ArticleSpider getArticleSpider(String sourceUrl) {
     if (StringUtils.isEmpty(sourceUrl)) {
       System.err.println("url 不能为空");
       return null;
@@ -56,7 +56,7 @@ public class ArticleSpiderFactory {
     String tencentSourceUrl5 = "http://ly.qq.com/a/20180605/029075.htm";
 
     String sourceUrl = tencentSourceUrl;
-    ArticleSpider spider = new ArticleSpiderFactory().getArticleSpider(sourceUrl);
+    ArticleSpider spider = ArticleSpiderFactory.getArticleSpider(sourceUrl);
 
     Article article = spider.getAriticle(sourceUrl);
     System.out.println(JSONUtil.parseObjectToJSONObject(article).toJSONString());
