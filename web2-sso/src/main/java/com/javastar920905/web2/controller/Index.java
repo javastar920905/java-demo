@@ -2,7 +2,11 @@ package com.javastar920905.web2.controller;
 
 import javax.servlet.http.HttpSession;
 
+import com.alibaba.fastjson.JSONArray;
+import com.javastar920905.oss.alibaba.AliOSSConstants;
+import com.javastar920905.oss.alibaba.AliOSSFileManageUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,5 +26,14 @@ public class Index {
       webAttr = (String) session.getAttribute("web");
     }
     return "hello " + webAttr;
+  }
+
+  @GetMapping(value = "/list/{pageNum}")
+  public JSONArray listFiles(@PathVariable Integer pageNum) {
+    JSONArray array = new JSONArray();
+    AliOSSConstants.bucketName = "integratedwall";
+    array.addAll(AliOSSFileManageUtils.listFiles("books/3DSea"));
+
+    return array;
   }
 }

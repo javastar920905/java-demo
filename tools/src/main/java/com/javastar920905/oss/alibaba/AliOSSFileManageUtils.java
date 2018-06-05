@@ -3,6 +3,7 @@ package com.javastar920905.oss.alibaba;
 
 import static com.javastar920905.oss.alibaba.AliOSSConstants.bucketName;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.aliyun.oss.model.ListObjectsRequest;
@@ -26,16 +27,16 @@ public class AliOSSFileManageUtils {
    *
    * @param maxKeys (限定返回文件的最大个数,默认返回100个)
    */
-  public static void listFiles(String keyPrefix, int maxKeys) {
+  public static List<String> listFiles(String keyPrefix, int maxKeys) {
     // 列举Object。
     ObjectListing objectListing = AliOSSConstants.ossClient
         .listObjects(new ListObjectsRequest(bucketName).withPrefix(keyPrefix).withMaxKeys(maxKeys));
     List<OSSObjectSummary> sums = objectListing.getObjectSummaries();
-    for (OSSObjectSummary s : sums) {
-      System.out.println("\t" + s.getKey());
-    }
+    List<String> files = new ArrayList<>();
+    sums.stream().forEach(s -> files.add(s.getKey()));
     // 关闭Client。
     AliOSSConstants.ossClient.shutdown();
+    return files;
   }
 
   /**
@@ -45,15 +46,17 @@ public class AliOSSFileManageUtils {
    *
    * @param
    */
-  public static void listFiles(String keyPrefix) {
+  public static List<String> listFiles(String keyPrefix) {
     // 每页默认大小
     final int maxKeys = 100;
     String nextMarker = null;
     ObjectListing objectListing;
+    List<String> files = new ArrayList<>();
     do {
       objectListing = AliOSSConstants.ossClient.listObjects(new ListObjectsRequest(bucketName)
           .withPrefix(keyPrefix).withMarker(nextMarker).withMaxKeys(maxKeys));
       List<OSSObjectSummary> sums = objectListing.getObjectSummaries();
+      sums.stream().forEach(s -> files.add(s.getKey()));
       for (OSSObjectSummary s : sums) {
         System.out.println("\t" + s.getKey());
       }
@@ -61,5 +64,6 @@ public class AliOSSFileManageUtils {
     } while (objectListing.isTruncated());
     // 关闭Client。
     AliOSSConstants.ossClient.shutdown();
+    return files;
   }
 }
