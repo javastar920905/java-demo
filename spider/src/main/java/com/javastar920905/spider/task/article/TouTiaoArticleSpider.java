@@ -1,12 +1,9 @@
 package com.javastar920905.spider.task.article;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Optional;
-import java.util.zip.GZIPInputStream;
 
-import org.apache.http.Header;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
 import org.apache.http.client.methods.HttpGet;
@@ -22,36 +19,11 @@ import com.javastar920905.spider.entity.Article;
 import us.codecraft.webmagic.selector.Html;
 
 /**
- * @author ouzhx on 2018/6/1.
+ * @author ouzhx on 2018/6/5.
  * 
- *         腾讯新闻爬取实现
+ *         36 氪 文章爬取
  */
-public class TencentArticleSpider implements ArticleSpider {
-
-  public static String getHtml(HttpResponse response) {
-    try {
-      Header[] headers = response.getHeaders("Accept-Encoding");
-      if (headers != null && headers.length > 0 && headers[0].getValue().contains("gzip")) {
-        // 如果经过gzip压缩则先解压,否则直接读取
-        GZIPInputStream gzin = new GZIPInputStream(response.getEntity().getContent());
-        BufferedReader bin = new BufferedReader(new InputStreamReader(gzin, "GB2312"));
-
-        StringBuffer result = new StringBuffer();
-        String line;
-        while ((line = bin.readLine()) != null) {
-          result.append(line);
-        }
-        return result.toString();
-      } else {
-        return EntityUtils.toString(response.getEntity());
-      }
-
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    return null;
-  }
-
+public class TouTiaoArticleSpider implements ArticleSpider {
   /**
    * 爬取外部文章
    *
@@ -71,32 +43,30 @@ public class TencentArticleSpider implements ArticleSpider {
     request.setProtocolVersion(HttpVersion.HTTP_1_0);
     request.addHeader("Content-Type", "text/html; charset=GB2312");
 
+    String webPageString = null;
     HttpResponse response = null;
     try {
       response = httpClient.execute(request);
+      webPageString = EntityUtils.toString(response.getEntity());
     } catch (IOException e) {
       e.printStackTrace();
     }
+    int startPos = webPageString.indexOf("articleInfo:") + 12;
+    int endPos = webPageString.indexOf("commentInfo:");
+    String jsonData = webPageString.substring(startPos, endPos);
+    jsonData = jsonData.substring(0, jsonData.lastIndexOf(","));
 
-    String webPageString = getHtml(response);
-
-
-    Html html = new Html(webPageString, sourceUrl);
-
+    JSONObject jsonObject = JSONObject.parseObject(jsonData);
     Article article = new Article();
-    article.setTitle(html.css("div.qq_conent.clearfix > div.LEFT > h1").xpath("h1/text()").get());
-    String contentHtml =
-        html.css("div.qq_conent.clearfix > div.LEFT > div.content.clearfix > div.content-article")
-            .get();
+    article.setTitle(jsonObject.getString("title"));
+    String contentHtml = jsonObject.getString("content");
     Optional.ofNullable(contentHtml).ifPresent(content -> {
       article.setContentHtml(contentHtml);
       article.setContent(RegexUtil.trimTag(contentHtml));
+      // 还需要去除&xx;格式标签
     });
-    article.setSource(ArticleConstants.ArticleSource.tencent.name());
+    article.setSource(ArticleConstants.ArticleSource.toutiao.name());
     article.setSourceUrl(sourceUrl);
     return article;
   }
-
-
-
 }

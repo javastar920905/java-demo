@@ -1,12 +1,8 @@
 package com.javastar920905.spider.task.article;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Optional;
-import java.util.zip.GZIPInputStream;
 
-import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
 import org.apache.http.client.methods.HttpGet;
@@ -26,31 +22,7 @@ import us.codecraft.webmagic.selector.Html;
  * 
  *         腾讯新闻爬取实现
  */
-public class TencentArticleSpider implements ArticleSpider {
-
-  public static String getHtml(HttpResponse response) {
-    try {
-      Header[] headers = response.getHeaders("Accept-Encoding");
-      if (headers != null && headers.length > 0 && headers[0].getValue().contains("gzip")) {
-        // 如果经过gzip压缩则先解压,否则直接读取
-        GZIPInputStream gzin = new GZIPInputStream(response.getEntity().getContent());
-        BufferedReader bin = new BufferedReader(new InputStreamReader(gzin, "GB2312"));
-
-        StringBuffer result = new StringBuffer();
-        String line;
-        while ((line = bin.readLine()) != null) {
-          result.append(line);
-        }
-        return result.toString();
-      } else {
-        return EntityUtils.toString(response.getEntity());
-      }
-
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    return null;
-  }
+public class QQLyArticleSpider implements ArticleSpider {
 
   /**
    * 爬取外部文章
@@ -71,23 +43,19 @@ public class TencentArticleSpider implements ArticleSpider {
     request.setProtocolVersion(HttpVersion.HTTP_1_0);
     request.addHeader("Content-Type", "text/html; charset=GB2312");
 
-    HttpResponse response = null;
+    String webPageString = null;
     try {
-      response = httpClient.execute(request);
+      HttpResponse response = httpClient.execute(request);
+      webPageString = EntityUtils.toString(response.getEntity());
     } catch (IOException e) {
       e.printStackTrace();
     }
 
-    String webPageString = getHtml(response);
-
-
     Html html = new Html(webPageString, sourceUrl);
 
     Article article = new Article();
-    article.setTitle(html.css("div.qq_conent.clearfix > div.LEFT > h1").xpath("h1/text()").get());
-    String contentHtml =
-        html.css("div.qq_conent.clearfix > div.LEFT > div.content.clearfix > div.content-article")
-            .get();
+    article.setTitle(html.css("#C-Main-Article-QQ > div.hd > h1").xpath("h1/text()").get());
+    String contentHtml = html.css("#Cnt-Main-Article-QQ").get();
     Optional.ofNullable(contentHtml).ifPresent(content -> {
       article.setContentHtml(contentHtml);
       article.setContent(RegexUtil.trimTag(contentHtml));

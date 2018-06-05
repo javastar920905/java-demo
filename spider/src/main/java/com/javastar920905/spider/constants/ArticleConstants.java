@@ -8,6 +8,6 @@ public interface ArticleConstants {
    * 文章来源
    */
   enum ArticleSource {
-    tencent, toutiao, an36;
+    tencent, toutiao, ke36;
   }
 }
