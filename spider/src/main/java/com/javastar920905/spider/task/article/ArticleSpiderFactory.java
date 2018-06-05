@@ -1,7 +1,6 @@
 package com.javastar920905.spider.task.article;
 
 import com.javastar920905.outer.JSONUtil;
-import com.javastar920905.spider.constants.ArticleConstants;
 import com.javastar920905.spider.entity.Article;
 import org.apache.commons.lang3.StringUtils;
 
@@ -46,7 +45,7 @@ public class ArticleSpiderFactory {
     // 头条测试通过
     String toutiaoSourceUrl = "https://www.toutiao.com/a6563426372201480707/";
     // qq新闻 测试通过
-    String tencentSourceUrl = "";
+    String tencentSourceUrl = "https://news.qq.com/a/20180605/015604.htm";
     // 腾讯新闻-国际新闻,法制新闻 测试通过
     String tencentSourceUrl2 = "http://new.qq.com/omn/20180605/20180605A0IQSN.html";
     // 腾讯滚动新闻 测试通过
@@ -56,7 +55,7 @@ public class ArticleSpiderFactory {
     // qq 旅游新闻 测试通过
     String tencentSourceUrl5 = "http://ly.qq.com/a/20180605/029075.htm";
 
-    String sourceUrl = tencentSourceUrl5;
+    String sourceUrl = tencentSourceUrl;
     ArticleSpider spider = new ArticleSpiderFactory().getArticleSpider(sourceUrl);
 
     Article article = spider.getAriticle(sourceUrl);
