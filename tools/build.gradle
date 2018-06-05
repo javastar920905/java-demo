@@ -36,6 +36,8 @@ dependencies {
 
     //缓存支持
     //compile("org.springframework.boot:spring-boot-starter-cache")
+    //阿里云Oss
+    compile("com.aliyun.oss:aliyun-sdk-oss:2.8.3")
 }
 
 

@@ -67,9 +67,17 @@ public class FileDemo {
    * 修改指定文件夹下 所有文件名称
    */
   @Test
-  public void modifyDirectionFilesName() {
-    String path = "E:\\bgwall\\BT";
-
+  public void modifyDirectionFilesNameBatch() {
+      String path = "D:\\Documents\\Tencent Files\\2111428948\\FileRecv\\";
+      modifyDirectionFilesName(path+"儿童卡通效果图");
+      modifyDirectionFilesName(path+"风景效果图");
+      modifyDirectionFilesName(path+"工装效果图");
+      modifyDirectionFilesName(path+"国画绘画效果图");
+      modifyDirectionFilesName(path+"欧式简约效果图");
+      modifyDirectionFilesName(path+"山水竹柳效果图");
+      modifyDirectionFilesName(path+"新中式效果图");
+  }
+  public void modifyDirectionFilesName(String path) {
     File dir = new File(path);
     if (dir.isDirectory()) {
       File[] files = dir.listFiles();
