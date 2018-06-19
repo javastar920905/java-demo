@@ -1,11 +1,10 @@
 package com.javastar920905.ffmpeg.service;
 
-import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import net.bramp.ffmpeg.builder.FFmpegOutputBuilder;
 import org.springframework.core.io.ClassPathResource;
 
 import com.javastar920905.ThreadUtil;
@@ -105,8 +104,31 @@ public class FFmpegService {
     }
   }
 
+  /**
+   * 官方文档 http://trac.ffmpeg.org/wiki/How%20to%20speed%20up%20/%20slow%20down%20a%20video
+   * https://blog.csdn.net/matrix_laboratory/article/details/53158307 调整音频倍数 ffmpeg -i 2.mps
+   * -filter:a "atempo=2.0" -vn output.mp3
+   *
+   * (setInput() 会添加 -y 覆盖 -i input参数,-vn参数可以省略,参数不能以空格开头)
+   *
+   * 构建顺序 是定义在FFmpegBuilder#build()
+   *
+   */
+  public void adjustVoiceSpeed(String inputFile) {
+    FFmpegBuilder builder = new FFmpegBuilder();
+    builder.setInput(inputFile);
+    builder.overrideOutputFiles(true);
+
+    builder.addOutput(getClassPath() + "output.mp3").setFormat("mp4")
+        .addExtraArgs("-filter:a \"atempo=2.0\" -vn").setStrict(FFmpegBuilder.Strict.EXPERIMENTAL)
+        .done();
+    // 报错 At least one output file must be specified
+    FFmpegConstants.FFMPEG_EXECUTOR.createJob(builder).run();
+  }
+
   public static void main(String[] args) {
-    new FFmpegService().joinAudio("1.mp3", "2.mp3");
+    // new FFmpegService().joinAudio("1.mp3", "2.mp3");
+    new FFmpegService().adjustVoiceSpeed(getFileAbsolutePath("2.mp3"));
   }
 
 
