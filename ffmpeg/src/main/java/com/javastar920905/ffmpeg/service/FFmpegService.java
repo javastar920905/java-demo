@@ -1,9 +1,13 @@
 package com.javastar920905.ffmpeg.service;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import com.javastar920905.util.FileUtil;
+import org.apache.commons.io.FileUtils;
+import org.springframework.boot.ApplicationHome;
 import org.springframework.core.io.ClassPathResource;
 
 import com.javastar920905.ThreadUtil;
@@ -18,6 +22,29 @@ import net.bramp.ffmpeg.probe.FFmpegProbeResult;
  * @author ouzhx on 2018/5/31.
  */
 public class FFmpegService {
+
+  /**
+   * 运行环境中jar文件目录
+   */
+  public static final String VOICE_BASE_PREPLAY_PATH =
+      new ApplicationHome(FFmpegService.class).getDir().getPath() + File.separator + "1.mp3";
+
+  /**
+   * copy 预览文件到指定路径
+   *
+   * @return
+   */
+  public static void copyPrePlayFileToDest() {
+    try {
+      // 从classpath根路径获取资源 ,复制到 ffmpeg/out/production/classes 目录下
+      FileUtils.copyInputStreamToFile(new ClassPathResource("1.mp3").getInputStream(),
+          new File(VOICE_BASE_PREPLAY_PATH));
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+
   /**
    * 获取class path 路径
    *
@@ -37,6 +64,8 @@ public class FFmpegService {
   /**
    * 获取reources 目录下的文件的 全路径
    *
+   * 发布后路径不准确啊....换一种实现方式吧
+   * @see FFmpegService#copyPrePlayFileToDest()
    * @param fileName
    * @return
    */
@@ -94,6 +123,7 @@ public class FFmpegService {
         sb.append(getFileAbsolutePath(file)).append("|");
 
       });
+      sb.deleteCharAt(sb.lastIndexOf("|"));
       builder.setInput(sb.toString());
       builder.overrideOutputFiles(true);
       builder.addOutput(getClassPath() + "join-output.mp3").done();
