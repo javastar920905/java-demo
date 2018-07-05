@@ -8,6 +8,10 @@ jar {
 dependencies {
     compile project(':tools')
     compile project(":entity")
+
+    compile("org.apache.httpcomponents:httpmime:4.3")
+    compile("org.json:org.json:chargebee-1.0")
+    compile("javax.mail:javax.mail-api:1.5.5")
 }
 
 

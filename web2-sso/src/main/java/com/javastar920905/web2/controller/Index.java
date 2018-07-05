@@ -32,7 +32,7 @@ public class Index {
   public JSONArray listFiles(@PathVariable Integer pageNum) {
     JSONArray array = new JSONArray();
     AliOSSConstants.bucketName = "integratedwall";
-    array.addAll(AliOSSFileManageUtils.listFiles("books/3DSea"));
+    array.addAll(AliOSSFileManageUtils.listFiles("books/3DSea",pageNum));
 
     return array;
   }
