@@ -20,7 +20,7 @@ import org.springframework.retry.support.RetryTemplate;
 import com.javastar920905.outer.spring.mq.RabbitMessageProducer;
 
 /**
- * Created by
+ * @author ouzhx by
  */
 @Configuration
 @EnableRabbit

@@ -14,6 +14,11 @@ public interface CommonConstants {
   String SSOSESSION = "SSO_SESSION";
 
   /**
+   * 常量表缓存名称
+   */
+  String CACHE_CONSTANTS = "cache:constants";
+
+  /**
    * 返回结果通用key (作为一种规范)
    */
   enum key {

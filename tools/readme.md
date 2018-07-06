@@ -7,6 +7,9 @@
 想要自己的一个工具类库
 从头开始熟悉java 常用api (基于jdk1.8)
 
+# 添加统一数据库常量表处理工具类
+com.javastar920905.constant.ConstantsRecordEntityCacheClientUtil
+常量表DDL定义:src\main\resources\constant_record_entity.sql
 
 # 相关参考文档
     比较喜欢的类似工具hutool  http://www.hutool.cn/ (目录结构和包名参考hutool项目)

@@ -9,12 +9,12 @@ import java.util.List;
 /**
  * @author ouzhx 和数据库常量表constants_record 的type字段对应
  */
-public class ConstantRecordUtil {
+public class ConstantRecordKeys {
   // 用於配合 ConstantsRecordClient.findConstantsByTypeInAndValueEq()方法一起使用
   public static final List<String> salaryTypeList = new ArrayList<>();
   static {
-    salaryTypeList.add(ConstantRecordUtil.DAY_SALARY);
-    salaryTypeList.add(ConstantRecordUtil.MONTHLY_SALARY);
+    salaryTypeList.add(ConstantRecordKeys.DAY_SALARY);
+    salaryTypeList.add(ConstantRecordKeys.MONTHLY_SALARY);
   }
 
 

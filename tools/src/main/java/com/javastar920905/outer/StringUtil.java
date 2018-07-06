@@ -307,7 +307,7 @@ public class StringUtil extends StringUtils {
    * 
    * @param length
    * @return
-   * @author huangzhk 2017/03/14
+   * @author
    */
   public static String generateRandomNumericString(int length) {
     Random rm = new Random();
@@ -319,6 +319,24 @@ public class StringUtil extends StringUtils {
 
     // 返回固定的长度的随机数
     return fixLengthString.substring(1, length + 1);
+  }
+
+  /**
+   * 全角转半角
+   */
+  public static String fullToHalf(String str) {
+    if (isBlank(str)) {
+      return EMPTY;
+    }
+    char[] chars = str.toCharArray();
+    for (int i = 0; i < chars.length; i++) {
+      if (chars[i] == 12288) {
+        chars[i] = ' ';
+      } else if (chars[i] >= 65281 && chars[i] <= 65374) {
+        chars[i] = (char) (chars[i] - 65248);
+      }
+    }
+    return new String(chars);
   }
 
 }
