@@ -65,6 +65,7 @@ public class FFmpegService {
    * 获取reources 目录下的文件的 全路径
    *
    * 发布后路径不准确啊....换一种实现方式吧
+   * 
    * @see FFmpegService#copyPrePlayFileToDest()
    * @param fileName
    * @return
@@ -113,17 +114,24 @@ public class FFmpegService {
    * 拼接多个音频(多个音频顺序拼接播放)
    *
    * 使用示例: new FFmpegService().combineAudio("1.mp3", "2.mp3");
+   * 
+   * ffmpeg.exe -y -v error -i
+   * concat:"D:/gitrepository/java-demo/ffmpeg/out/production/resources/1.mp3|D:/gitrepository/java-demo/ffmpeg/out/production/resources/2.mp3"
+   * D:/gitrepository/java-demo/ffmpeg/out/production/classes/join-output.mp3
+   * 
+   * 说明 concat: 后面的双引号" "是一定要的,不然linux下生成失败,显示0k
    */
   public void joinAudio(String... sources) {
     try {
       FFmpegBuilder builder = new FFmpegBuilder();
       StringBuilder sb = new StringBuilder();
-      sb.append("concat:");
+      sb.append("concat:\"");
       Arrays.stream(sources).forEach(file -> {
         sb.append(getFileAbsolutePath(file)).append("|");
 
       });
       sb.deleteCharAt(sb.lastIndexOf("|"));
+      sb.append("\"");
       builder.setInput(sb.toString());
       builder.overrideOutputFiles(true);
       builder.addOutput(getClassPath() + "join-output.mp3").done();

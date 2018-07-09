@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.javastar920905.constant.ConstantsRecordEntityCacheClientUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -110,55 +111,6 @@ public class ReflectUtil {
           "将对象属性封装到map出错!", e);
     }
     return distMap;
-  }
-
-
-  /**
-   * 将返回值业务bean转化为json,并且不覆盖bean的原有值 并且自动注入常量name到json
-   *
-   */
-  public static JSONObject copyBeanAndConstantsName2Json(Object BusinessBean, JSONObject distJson) {
-    if (distJson == null) {
-      distJson = new JSONObject();
-    }
-    try {
-      copyBean2JsonWithOutConstantsName(BusinessBean, distJson);
-      ConstantsRecordClientUtil.autoWiredConstantsNameByConstantsValue(BusinessBean, distJson);
-    } catch (Exception e) {
-      System.err.println("对象转换成json失败");
-    }
-    return distJson;
-  }
-
-  /**
-   * 将返回值业务bean转化为json not注入常量name 不包含父类字段
-   * 
-   *
-   */
-  public static JSONObject copyBean2JsonWithOutConstantsName(Object BusinessBean,
-      JSONObject distJson) {
-    try {
-      Class<?> instance = BusinessBean.getClass();
-      Field[] fields = instance.getDeclaredFields();
-      for (Field field : fields) {
-        field.setAccessible(true);
-        String fieldName = field.getName();
-        if (fieldName.equalsIgnoreCase("serialVersionUID")) {
-          continue;
-        }
-        // 不覆盖json原有值
-        if (field.getType() == Date.class) {
-          Date fieldValue = (Date) field.get(BusinessBean);
-          distJson.put(fieldName, DateUtil.dateFormat(fieldValue, "yyyy-MM-dd"));
-        } else {
-          distJson.put(fieldName, field.get(BusinessBean));
-        }
-      }
-    } catch (Exception e) {
-      LOGGER.error(appendArray("params", BusinessBean).and(append("errType", e.toString())),
-          "对象转换成json失败,程序出错!", e);
-    }
-    return distJson;
   }
 
   /**
