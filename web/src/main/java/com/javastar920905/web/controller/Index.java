@@ -42,7 +42,7 @@ public class Index {
   @GetMapping("/")
   public String hello(HttpSession session) {
     session.setAttribute("web", "web project attribute");
-    String web2Attr = "无法获取 web2项目的session";
+    String web2Attr = "无法获取 web2项目的session,添加spring boot 热部署测试";
     if (session.getAttribute("web2") != null) {
       web2Attr = (String) session.getAttribute("web2");
     }

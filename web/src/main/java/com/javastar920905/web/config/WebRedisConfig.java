@@ -39,12 +39,13 @@ public class WebRedisConfig {
 
   @Bean(name = "jedisConnectionFactory")
   public JedisConnectionFactory jedisConnectionFactory(JedisPoolConfig jedisPoolConfig,
-      @Value("${redis.host}") String redisHost) {
+      @Value("${redis.host}") String redisHost,@Value("${redis.password}") String redisPwd) {
     JedisConnectionFactory factory = new JedisConnectionFactory();
     factory.setUsePool(true);
     factory.setPoolConfig(jedisPoolConfig);
     factory.setHostName(redisHost);
     factory.setPort(6379);
+    factory.setPassword(redisPwd);
     return factory;
   }
 
