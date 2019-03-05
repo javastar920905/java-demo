@@ -2,6 +2,7 @@
 /build/
 /out/
 **/out/**
+**/target/**
 !gradle/wrapper/gradle-wrapper.jar
 
 ### STS ###
