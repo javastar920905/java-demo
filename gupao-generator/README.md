@@ -7,3 +7,8 @@
     table          定义各个表的信息，一个表一个table
 
 2. 运行mvn mybatis-generator:generate
+
+
+## 方式二 使用test 下面CodeGenerator 生成service和controller
+1 修改基本包名core.ProjectConstant
+2 修改数据库连接 CodeGenerator
