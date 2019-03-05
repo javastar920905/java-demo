@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "mybatis-generator-config_1_0.dtd">
+
+<generatorConfiguration>
+    <classPathEntry location="D:/mysql-connector-java-5.1.7-bin.jar"/>
+
+    <context id="MysqlTables" targetRuntime="MyBatis3">
+        <!--去除注释  -->
+        <commentGenerator>
+            <property name="suppressAllComments" value="true"/>
+        </commentGenerator>
+
+        <jdbcConnection driverClass="com.mysql.jdbc.Driver"
+                        connectionURL="jdbc:mysql://dbserver:3306/article"
+                        userId="apple"
+                        password="X0dxeLpK">
+        </jdbcConnection>
+
+        <javaTypeResolver>
+            <property name="forceBigDecimals" value="false"/>
+        </javaTypeResolver>
+
+        <javaModelGenerator targetPackage="com.gupao.dal.dao" targetProject="E:\gitRepository\java-demo\gupao-generator\src\main\java">
+            <property name="enableSubPackages" value="false"/>
+            <property name="trimStrings" value="true"/>
+        </javaModelGenerator>
+
+        <sqlMapGenerator targetPackage="xml" targetProject="E:\gitRepository\java-demo\gupao-generator\src\main\resources">
+            <property name="enableSubPackages" value="false"/>
+        </sqlMapGenerator>
+
+        <javaClientGenerator type="XMLMAPPER" targetPackage="com.gupao.dal.dao" targetProject="E:\gitRepository\java-demo\gupao-generator\src\main\java">
+            <property name="enableSubPackages" value="false"/>
+        </javaClientGenerator>
+
+        <table  tableName="article" domainObjectName="Article">
+            <property name="useActualColumnNames" value="false"/>
+            <!--<generatedKey column="ID" sqlStatement="DB2" identity="true"/>-->
+            <columnOverride column="DATE_FIELD" property="startDate"/>
+            <ignoreColumn column="FRED"/>
+            <columnOverride column="LONG_VARCHAR_FIELD" jdbcType="VARCHAR"/>
+        </table>
+
+        <!--<table schema="gp" tableName="user" domainObjectName="TcUser">-->
+            <!--<property name="useActualColumnNames" value="false"/>-->
+            <!--&lt;!&ndash;<generatedKey column="ID" sqlStatement="DB2" identity="true"/>&ndash;&gt;-->
+            <!--<columnOverride column="DATE_FIELD" property="startDate"/>-->
+            <!--<ignoreColumn column="FRED"/>-->
+            <!--<columnOverride column="LONG_VARCHAR_FIELD" jdbcType="VARCHAR"/>-->
+        <!--</table>-->
+
+        <!--<table schema="gp" tableName="user_group" domainObjectName="UserGroup">-->
+            <!--<property name="useActualColumnNames" value="false"/>-->
+            <!--&lt;!&ndash;<generatedKey column="ID" sqlStatement="DB2" identity="true"/>&ndash;&gt;-->
+            <!--<columnOverride column="DATE_FIELD" property="startDate"/>-->
+            <!--<ignoreColumn column="FRED"/>-->
+            <!--<columnOverride column="LONG_VARCHAR_FIELD" jdbcType="VARCHAR"/>-->
+        <!--</table>-->
+
+        <!--<table schema="gp" tableName="blog" domainObjectName="Blog">-->
+            <!--<property name="useActualColumnNames" value="false"/>-->
+            <!--&lt;!&ndash;<generatedKey column="ID" sqlStatement="DB2" identity="true"/>&ndash;&gt;-->
+            <!--<columnOverride column="DATE_FIELD" property="startDate"/>-->
+            <!--<ignoreColumn column="FRED"/>-->
+            <!--<columnOverride column="LONG_VARCHAR_FIELD" jdbcType="VARCHAR"/>-->
+        <!--</table>-->
+
+        <!--<table schema="gp" tableName="author" domainObjectName="Author">-->
+            <!--<property name="useActualColumnNames" value="false"/>-->
+            <!--&lt;!&ndash;<generatedKey column="ID" sqlStatement="DB2" identity="true"/>&ndash;&gt;-->
+            <!--<columnOverride column="DATE_FIELD" property="startDate"/>-->
+            <!--<ignoreColumn column="FRED"/>-->
+            <!--<columnOverride column="LONG_VARCHAR_FIELD" jdbcType="VARCHAR"/>-->
+        <!--</table>-->
+
+        <!--<table schema="gp" tableName="posts" domainObjectName="Posts">-->
+            <!--<property name="useActualColumnNames" value="false"/>-->
+            <!--&lt;!&ndash;<generatedKey column="ID" sqlStatement="DB2" identity="true"/>&ndash;&gt;-->
+            <!--<columnOverride column="DATE_FIELD" property="startDate"/>-->
+            <!--<ignoreColumn column="FRED"/>-->
+            <!--<columnOverride column="LONG_VARCHAR_FIELD" jdbcType="VARCHAR"/>-->
+        <!--</table>-->
+
+    </context>
+</generatorConfiguration>
