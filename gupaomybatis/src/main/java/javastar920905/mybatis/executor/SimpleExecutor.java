@@ -35,7 +35,7 @@ public class SimpleExecutor implements OzxExecutor {
             while (rs.next()) {
                 result = new Msg();
                 result.setId(rs.getString(1));
-                result.setName(rs.getString(2));
+                result.setContent(rs.getString(2));
             }
 
         } catch (ClassNotFoundException e) {
