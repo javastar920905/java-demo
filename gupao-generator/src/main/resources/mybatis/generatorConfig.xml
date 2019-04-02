@@ -13,7 +13,7 @@
         </commentGenerator>
 
         <jdbcConnection driverClass="com.mysql.jdbc.Driver"
-                        connectionURL="jdbc:mysql://dbserver:3306/article"
+                        connectionURL="jdbc:mysql://dbserver:3306/tax_market_dev"
                         userId="apple"
                         password="X0dxeLpK">
         </jdbcConnection>
@@ -35,7 +35,7 @@
             <property name="enableSubPackages" value="false"/>
         </javaClientGenerator>
 
-        <table  tableName="article" domainObjectName="Article">
+        <table  tableName="msg" domainObjectName="Msg">
             <property name="useActualColumnNames" value="false"/>
             <!--<generatedKey column="ID" sqlStatement="DB2" identity="true"/>-->
             <columnOverride column="DATE_FIELD" property="startDate"/>
