@@ -16,16 +16,22 @@ public class FreemarkerDemoApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(FreemarkerDemoApplication.class, args);
+        //doGenerate()
+    }
 
+    /**
+     * freemaker 生成文件示例(没有spring 示例)
+     */
+    public static void doGenerate() {
         Map<String, Object> root = new HashMap<>();
         root.put("user", "Big Joe");
 
-        Map<String,String> latest=new HashMap<>();
+        Map<String, String> latest = new HashMap<>();
         latest.put("url", "products/greenmouse.html");
         latest.put("name", "test product");
         root.put("latestProduct", latest);
 
-        String tempaltePath=FreemarkerDemoApplication.class.getClass().getResource("/templates").getPath();
+        String tempaltePath = FreemarkerDemoApplication.class.getClass().getResource("/templates").getPath();
 
         try {
             Configuration cfg = new Configuration(Configuration.VERSION_2_3_27); //创建实例,指定兼容版本
@@ -46,7 +52,7 @@ public class FreemarkerDemoApplication {
             temp.process(root, out);//合并模板和数据
             out.flush();
             out.close();
-            System.out.println("程序已经生成文件:"+distFile.getAbsolutePath());
+            System.out.println("程序已经生成文件:" + distFile.getAbsolutePath());
         } catch (IOException e) {
             e.printStackTrace();
         } catch (TemplateException e) {
