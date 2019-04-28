@@ -1,0 +1,2 @@
+#inititalizer
+org.springframework.context.ApplicationContextInitializer=cn.javabus.codeidentification.util.SpringContextUtil
