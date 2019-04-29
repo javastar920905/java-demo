@@ -20,7 +20,7 @@ public interface TicketSpider {
      * @param
      * @return
      */
-    JSONObject refreshCode();
+    JSONObject refreshCode(JSONObject param);
 
 
     /**

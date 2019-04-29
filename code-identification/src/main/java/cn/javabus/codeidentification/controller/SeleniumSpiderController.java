@@ -25,9 +25,9 @@ public class SeleniumSpiderController {
     }
 
     @GetMapping("refreshCode")
-    public JSONObject refreshCode() {
+    public JSONObject refreshCode(@RequestBody JSONObject param) {
         TicketSpider ticketSpider = TickerSpiderFactory.instance(EnumTicketPlateform.getPlatFormByName("chinatax"));
-        return ticketSpider.refreshCode();
+        return ticketSpider.refreshCode(param);
     }
 
     //验证码识别-以及调用发票查验接口

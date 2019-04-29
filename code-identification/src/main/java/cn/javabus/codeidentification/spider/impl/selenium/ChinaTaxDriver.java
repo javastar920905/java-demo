@@ -156,18 +156,29 @@ public class ChinaTaxDriver extends TicketSpiderTemplate {
     }
 
     @Override
-    public JSONObject refreshCode() {
+    public JSONObject refreshCode(JSONObject param) {
         try {
-            WebElement yzmImg = driver.findElement(By.id("yzm_img"));
-            WebElement yzm_unuse_img = driver.findElement(By.id("yzm_unuse_img"));
-            //雙擊?
-            Actions action = new Actions(driver);
-            action.doubleClick(yzmImg);
-            action.doubleClick(yzm_unuse_img);
+            //點擊重置按鈕,重新填寫表單
+            WebElement reset = driver.findElement(By.id("reset"));
+            reset.click();
+
+//            WebElement yzmImg = driver.findElement(By.id("yzm_img"));
+//            WebElement yzm_unuse_img = driver.findElement(By.id("yzm_unuse_img"));
+//            WebElement imgarea = driver.findElement(By.id("imgarea"));
+//            WebElement a = imgarea.findElement(By.tagName("a"));
+//            //雙擊?
+//            Actions action = new Actions(driver);
+//            action.doubleClick(yzmImg);
+//            action.doubleClick(yzm_unuse_img);
+//            action.doubleClick(imgarea);
+//            action.doubleClick(a);
+//            yzmImg.click();
+//            //yzm_unuse_img.click(); display none 的不能click()
+//            a.click();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return getCode();
+        return getCode(param);
     }
 
     @Override
@@ -191,7 +202,7 @@ public class ChinaTaxDriver extends TicketSpiderTemplate {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            JSONObject jsonObject = refreshCode();
+            JSONObject jsonObject = refreshCode(param);
             jsonObject.put("msg", popup_message!=null?popup_message.getText():"");
             return jsonObject;
         }else {
