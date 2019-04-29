@@ -160,6 +160,7 @@ public class ChinaTaxDriver extends TicketSpiderTemplate {
         FileUtil.writeFile(selenium_dir+"result.txt", result);
 
         String pageSource = driver.getPageSource();
+        FileUtil.writeFile(selenium_dir+"pageSource.html", result);
         //获取 id=tabPage2 区域,转成pdf
         //网页转pdf
         log.info(pageSource);
