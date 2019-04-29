@@ -32,8 +32,6 @@ public class HTTPUtil {
                 .header(Header.ACCEPT, "application/javascript, */*; q=0.8")
                 .header(Header.ACCEPT_LANGUAGE, "zh-CN")
                 .header(Header.CONNECTION, "Keep-Alive")
-                .header(Header.HOST, "fpcy.beijing.chinatax.gov.cn")
-                .header(Header.REFERER, "https://inv-veri.chinatax.gov.cn/")
                 .header(Header.ACCEPT_ENCODING,"gzip, deflate" )
                 ;
     }
