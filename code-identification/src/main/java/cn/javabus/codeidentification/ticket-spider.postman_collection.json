@@ -1,0 +1,263 @@
+{
+	"info": {
+		"_postman_id": "7ff55170-f9e2-4913-bb6f-1d92aae7ed09",
+		"name": "ticket-spider",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "ChinaTaxSpider",
+			"item": [
+				{
+					"name": "获取验证码",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "d337fa53-3e93-44b6-9138-0070c5247001",
+								"exec": [
+									"var data = JSON.parse(responseBody);\r",
+									"console.log(data);\r",
+									"tests[\"获取验证码成功,获取到token\"] =responseBody.has('key1');\r",
+									"pm.globals.set(\"index\",data.data.token)\r",
+									"pm.globals.set(\"yzmSj\", data.data.token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"fpdm\":\"3200182130\",\n\t\"fphm\":\"93747037\"\n}"
+						},
+						"url": {
+							"raw": "http://172.17.6.115:7125/ticket/getCode",
+							"protocol": "http",
+							"host": [
+								"172",
+								"17",
+								"6",
+								"115"
+							],
+							"port": "7125",
+							"path": [
+								"ticket",
+								"getCode"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "使用验证码获取 发票查验结果",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"key1\":\"3200182130\",\n\t\"key2\":\"93747037\",\n\t\"key3\":\"20190325\",\n\t\"key4\":\"82.07\",\n\t\"yzm\":\"那忽\"\n}"
+						},
+						"url": {
+							"raw": "http://172.17.6.115:7125/ticket/codeIdentification?yzmSj={{yzmSj}}&index={{index}}",
+							"protocol": "http",
+							"host": [
+								"172",
+								"17",
+								"6",
+								"115"
+							],
+							"port": "7125",
+							"path": [
+								"ticket",
+								"codeIdentification"
+							],
+							"query": [
+								{
+									"key": "yzmSj",
+									"value": "{{yzmSj}}"
+								},
+								{
+									"key": "index",
+									"value": "{{index}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "全国增值税发票校验"
+		},
+		{
+			"name": "ChinaTaxSpider-selenium",
+			"item": [
+				{
+					"name": "获取验证码",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "d337fa53-3e93-44b6-9138-0070c5247001",
+								"exec": [
+									"var data = JSON.parse(responseBody);\r",
+									"console.log(data);\r",
+									"tests[\"获取验证码成功,获取到token\"] =responseBody.has('key1');\r",
+									"pm.globals.set(\"index\",data.data.token)\r",
+									"pm.globals.set(\"yzmSj\", data.data.token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"fpdm\":\"3200182130\",\n\t\"fphm\":\"93747037\",\n\t\"kprq\":\"20190325\",\n\t\"kjje\":\"82.07\"\n}"
+						},
+						"url": {
+							"raw": "http://172.17.6.115:7125/ticket/getCode",
+							"protocol": "http",
+							"host": [
+								"172",
+								"17",
+								"6",
+								"115"
+							],
+							"port": "7125",
+							"path": [
+								"ticket",
+								"getCode"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "刷新验证码",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "d337fa53-3e93-44b6-9138-0070c5247001",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://172.17.6.115:7125/ticket/refreshCode",
+							"protocol": "http",
+							"host": [
+								"172",
+								"17",
+								"6",
+								"115"
+							],
+							"port": "7125",
+							"path": [
+								"ticket",
+								"refreshCode"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "使用验证码获取 发票查验结果",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"key1\":\"3200182130\",\n\t\"key2\":\"93747037\",\n\t\"key3\":\"20190325\",\n\t\"key4\":\"82.07\",\n\t\"yzm\":\"那忽\"\n}"
+						},
+						"url": {
+							"raw": "http://172.17.6.115:7125/ticket/codeIdentification?yzmSj={{yzmSj}}&index={{index}}",
+							"protocol": "http",
+							"host": [
+								"172",
+								"17",
+								"6",
+								"115"
+							],
+							"port": "7125",
+							"path": [
+								"ticket",
+								"codeIdentification"
+							],
+							"query": [
+								{
+									"key": "yzmSj",
+									"value": "{{yzmSj}}"
+								},
+								{
+									"key": "index",
+									"value": "{{index}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "全国增值税发票校验"
+		}
+	]
+}
