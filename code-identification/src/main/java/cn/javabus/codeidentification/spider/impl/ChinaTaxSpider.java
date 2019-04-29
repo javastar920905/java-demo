@@ -10,7 +10,6 @@ import cn.javabus.codeidentification.enums.EnumTicketPlateform;
 import cn.javabus.codeidentification.util.Base64Utils;
 import cn.javabus.codeidentification.util.HTTPUtil;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
@@ -185,17 +184,18 @@ public class ChinaTaxSpider extends TicketSpiderTemplate {
 public static void main(String[] args) {
     //ConfigurableApplicationContext context = SpringApplication.run(TaxArticleApplication.class, args);
     TreeMap<String,String> param=new TreeMap<>();
-    param.put("_", System.currentTimeMillis()+"");
+    param.put("_", "1556454131803");
     param.put("area", "4403");//地区
-    param.put("fplx", "04");//发票类型
-    param.put("index", "1b620f7b5cae12a2b370e9b38dfadbba");
-    param.put("key1", "044031800104");//发票代码
-    param.put("key2", "28527159");//发票号码
-    param.put("key3", "20190225");//开票日期
-    param.put("key4", "170515");//校验码后6位
+    param.put("callback" , "jQuery110209225644205900412_1556454131795");
+    param.put("fpdm", "044031800104");//发票代码
+    param.put("fphm", "28527159");//发票号码
+    param.put("nowtime", "1556454284882");
+    param.put("r", "0.5016109841711769");
+    param.put("v", "V1.0.07_001");//
+    param.put("_Jo0OQK", "793BF52173F0030F3AD9412441EBBD0395FB8D65A56C2DA66DD6FB7D3C302C845F2A0A25087EA0374CFGJ1Z1Ug==");//
     String sign = SignUtil.getSign(param);
     System.out.println(sign);
-    param.put("publickey", "951202F401BD7A67261C9E115C6F1C2D");
+    param.put("publickey", "2D1CED5EBF2F6E9A5685201286DB535F");
 }
 
     /**
@@ -228,7 +228,7 @@ public static void main(String[] args) {
          * @return 验证签名结果
          */
         public static boolean verifySign(SortedMap<String, String> params) {
-            if (params == null || StringUtils.isEmpty(params.get("sign"))){ return false};
+            if (params == null || StringUtils.isEmpty(params.get("sign"))){ return false;}
             String sign = getSign(params);
             return !StringUtils.isEmpty(sign) && params.get("sign").equals(sign);
         }
