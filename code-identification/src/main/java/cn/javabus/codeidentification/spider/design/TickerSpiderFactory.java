@@ -2,6 +2,7 @@ package cn.javabus.codeidentification.spider.design;
 
 import cn.javabus.codeidentification.enums.EnumTicketPlateform;
 import cn.javabus.codeidentification.spider.impl.ChinaTaxSpider;
+import cn.javabus.codeidentification.spider.impl.selenium.ChinaTaxDriver;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ public class TickerSpiderFactory {
         if (!TICKET_SPIDER_CONTAINER.containsKey(ticketPlateform)) {
             synchronized (TICKET_SPIDER_CONTAINER) {
                 if (!TICKET_SPIDER_CONTAINER.containsKey(ticketPlateform)) {
-                    TICKET_SPIDER_CONTAINER.put(ticketPlateform, new ChinaTaxSpider(ticketPlateform));
+                    TICKET_SPIDER_CONTAINER.put(ticketPlateform, new ChinaTaxDriver(ticketPlateform));
                 }
             }
             return TICKET_SPIDER_CONTAINER.get(ticketPlateform);

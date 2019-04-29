@@ -97,6 +97,11 @@ public class ChinaTaxSpider extends TicketSpiderTemplate {
     }
 
     @Override
+    public JSONObject refreshCode() {
+        return null;
+    }
+
+    @Override
     public JSONObject codeIdentification(JSONObject param) {
         log.info(JSONUtil.toJsonPrettyStr(param));
 

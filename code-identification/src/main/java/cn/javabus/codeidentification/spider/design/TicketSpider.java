@@ -15,6 +15,13 @@ public interface TicketSpider {
      */
     JSONObject getCode( JSONObject param);
 
+    /**
+     * 刷新验证码
+     * @param
+     * @return
+     */
+    JSONObject refreshCode();
+
 
     /**
      * 验证码识别-以及调用发票查验接口
