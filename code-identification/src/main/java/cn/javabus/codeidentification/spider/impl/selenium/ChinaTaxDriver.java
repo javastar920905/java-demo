@@ -12,10 +12,28 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.ie.InternetExplorerDriver;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.remote.server.handler.SendKeys;
 import org.springframework.util.StringUtils;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author ouzhx on 2019/4/29.
+ *
+ * 报错总结:
+ *  1 Browser zoom level was set to 150%. It should be set to 100%
+ *  解决: IE 设置,缩放比例设置为100%即可
+ *
+ *  2 浏览器->安全选项->4个设置需要保持一致,要么全部关闭"启用保护模式",要么全部开启
+ *
+ *  3 提示https安全性问题:
+ *  解决: 安装证书
+ *  解决2: 关闭https提示  https://www.cnblogs.com/leeboke/p/8108680.html
  */
 @Log4j2
 public class ChinaTaxDriver extends TicketSpiderTemplate {
@@ -24,14 +42,26 @@ public class ChinaTaxDriver extends TicketSpiderTemplate {
     static String selenium_dir = root + "code-identification\\src\\main\\java\\cn\\javabus\\codeidentification\\spider\\impl\\selenium\\";
     static WebDriver driver;
     private static String userId = "seleniumtest";//todo
+    private ReentrantLock lock=new ReentrantLock();
 
     public ChinaTaxDriver(EnumTicketPlateform ticketPlateform) {
         super(ticketPlateform);
         System.setProperty("webdriver.ie.driver", selenium_dir + "IEDriverServer.exe");
-        if (driver == null) {
-            driver = new InternetExplorerDriver();
-        }
+        driveInstance();
         //System.setProperty("webdriver.chrome.driver",selenium_dir+"chromedriver.exe" );
+    }
+    private void driveInstance(){
+
+        if (driver == null) {
+            lock.lock();
+            if (driver == null) {
+                driver = new InternetExplorerDriver();
+                driver.get("https://inv-veri.chinatax.gov.cn/");
+            }
+            if (lock.isLocked()){
+                lock.unlock();
+            }
+        }
     }
 
 
@@ -42,19 +72,41 @@ public class ChinaTaxDriver extends TicketSpiderTemplate {
 
     @Override
     public JSONObject getCode(JSONObject param) {
-        driver.get("https://inv-veri.chinatax.gov.cn/");
+        driveInstance();
+
         WebElement fpdm = driver.findElement(By.id("fpdm"));
-        fpdm.sendKeys(param.getStr("fpdm"));
+        sendKeys("fpdm",fpdm,param.getStr("fpdm"));
         WebElement fphm = driver.findElement(By.id("fphm"));
-        fphm.sendKeys(param.getStr("fphm"));
+        sendKeys("fphm",fphm,param.getStr("fphm"));
         WebElement kprq = driver.findElement(By.id("kprq"));
-        kprq.sendKeys(param.getStr("kprq"));
+        sendKeys("kprq",kprq,param.getStr("kprq"));
         WebElement kjje = driver.findElement(By.id("kjje"));
-        kjje.sendKeys(param.getStr("kjje"));
+        sendKeys("kjje",kjje,param.getStr("kjje"));
 
         //获取验证码属,返回验证码提示
         JSONObject json = getCode();
         return json;
+    }
+
+    static ConcurrentHashMap<String,Integer> userRetryCount=new ConcurrentHashMap<>();
+    static int maxRetry=3;
+    public  void sendKeys(String eleId,WebElement ele,String val){
+        String key=userId+eleId;
+        Integer retryCount = userRetryCount.get(key);
+        if (retryCount==null){
+            userRetryCount.put(key, 0);
+        }else {
+            retryCount+=1;
+            userRetryCount.put(key, retryCount);
+        }
+        ele.sendKeys(val);
+
+        //输入值不一致,重试
+        String value = ele.getAttribute("value");
+        if (!val.equals(value)&&retryCount<maxRetry){
+            sendKeys(eleId,ele,val);
+            log.info("用户输入val{} 与 输入框值 {}不一致,重试:{} 次",val,value,retryCount);
+        }
     }
 
     /**
@@ -63,18 +115,32 @@ public class ChinaTaxDriver extends TicketSpiderTemplate {
     private JSONObject getCode() {
         //获取验证码属,返回验证码提示
         WebElement yzmImg = driver.findElement(By.id("yzm_img"));
-        yzmImg.click();
         String src = yzmImg.getAttribute("src");
-
-        if (StringUtils.isEmpty(src)) {
-            String imageBase64FromSrc = getImageBase64FromSrc(src);
-            log.info(imageBase64FromSrc);
-            Base64Utils.Base64ToImage(imageBase64FromSrc, "/" + userId + ".jpg");
+        try {
+            //返回默认图片时,重新触发点击事件,获取验证码
+            if (!src.contains(imageBase64Prefix)){
+                yzmImg.click();
+            }
+        } catch (Exception e) {
+            log.info( e.getMessage()+"  图片属性值:display= "+yzmImg.getCssValue("display"));
         }
 
-        WebElement yzminfo = driver.findElement(By.id("yzminfo")).findElement(By.tagName("font"));
-        String yzminfoStr = "请输入验证图片中:" + yzminfo.getText() + "文字";
+        WebElement yzminfo = null;
+        try {
+            //00 font是為空的
+            yzminfo = driver.findElement(By.id("yzminfo")).findElement(By.tagName("font"));
+        } catch (Exception e) {
+            log.info( e.getMessage());
+        }
+        String yzminfoStr = "请输入验证图片中" + yzminfo!=null?yzminfo.getText():"" + "文字";
         log.info(yzminfoStr);
+
+        src = yzmImg.getAttribute("src");
+        if (!StringUtils.isEmpty(src)&&src.contains(imageBase64Prefix)) {
+            String imageBase64FromSrc = getImageBase64FromSrc(src);
+            log.info("生成驗證碼圖片 長度:"+imageBase64FromSrc.length());
+            Base64Utils.Base64ToImage(imageBase64FromSrc, "./"+userId + ".jpg");
+        }
 
         JSONObject json = new JSONObject();
         json.put("codeTip", yzminfoStr);
@@ -91,24 +157,45 @@ public class ChinaTaxDriver extends TicketSpiderTemplate {
 
     @Override
     public JSONObject refreshCode() {
+        try {
+            WebElement yzmImg = driver.findElement(By.id("yzm_img"));
+            WebElement yzm_unuse_img = driver.findElement(By.id("yzm_unuse_img"));
+            //雙擊?
+            Actions action = new Actions(driver);
+            action.doubleClick(yzmImg);
+            action.doubleClick(yzm_unuse_img);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return getCode();
     }
 
     @Override
     public JSONObject codeIdentification(JSONObject param) {
         WebElement yzm = driver.findElement(By.id("yzm"));
-        yzm.sendKeys(param.getStr("yzm"));
+        sendKeys("yzm",yzm,param.getStr("yzm"));
 
         //提交查验
         WebElement checkfp = driver.findElement(By.id("checkfp"));
         checkfp.click();
 
-        //todo 返回查验结果
         StringBuffer sb = new StringBuffer();
-
         WebElement floatwin = driver.findElement(By.id("floatwin"));
         System.out.println(floatwin.isDisplayed());
-        //if (floatwin.isDisplayed()){
+
+        if (!floatwin.isDisplayed()) {
+            //返回出错提示
+            WebElement popup_message= null;
+            try {
+                popup_message = driver.findElement(By.id("popup_message"));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            JSONObject jsonObject = refreshCode();
+            jsonObject.put("msg", popup_message!=null?popup_message.getText():"");
+            return jsonObject;
+        }else {
+            //返回查验成功结果
         //table 表头区域
         WebElement cycs = driver.findElement(By.id("cycs"));//查验次数
         WebElement cysj = driver.findElement(By.id("cysj"));//查验时间
@@ -155,7 +242,7 @@ public class ChinaTaxDriver extends TicketSpiderTemplate {
 //        sb.append("机器编码:   ").append(jqbh_zp).append("\r\n");
 //        sb.append("机器编码:   ").append(jqbh_zp).append("\r\n");
 //        sb.append("机器编码:   ").append(jqbh_zp).append("\r\n");
-
+        }
         String result = sb.toString();
         FileUtil.writeFile(selenium_dir+"result.txt", result);
 
@@ -164,14 +251,13 @@ public class ChinaTaxDriver extends TicketSpiderTemplate {
         //获取 id=tabPage2 区域,转成pdf
         //网页转pdf
         log.info(pageSource);
-        try {
-            //wkhtmltopdf toc test.html test.pdf
-            String command = "C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe toc test.html test.pdf";
-            RunProcess.doExec(command);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        //}
+//        try {
+//            //wkhtmltopdf toc test.html test.pdf
+//            String command = "C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe toc test.html test.pdf";
+//            RunProcess.doExec(command);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
         JSONObject resultJson = new JSONObject();
         resultJson.put("result", result);
         return resultJson;

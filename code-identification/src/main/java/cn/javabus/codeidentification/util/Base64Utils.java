@@ -125,8 +125,12 @@ public class Base64Utils {
             out.flush();
             out.close();
 
+            File file=new File(imgFilePath);
+            System.out.println(file.getAbsoluteFile());
+
             return true;
         } catch (Exception e) {
+            System.err.println(e.getMessage());
             return false;
         }
 
