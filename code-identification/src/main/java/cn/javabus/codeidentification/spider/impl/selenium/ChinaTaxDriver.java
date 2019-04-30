@@ -11,11 +11,8 @@ import lombok.extern.log4j.Log4j2;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.ie.InternetExplorerDriver;
-import org.openqa.selenium.interactions.Actions;
 import org.springframework.util.StringUtils;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -208,6 +205,15 @@ public class ChinaTaxDriver extends TicketSpiderTemplate {
             WebElement popup_message = null;
             try {
                 popup_message = driver.findElement(By.id("popup_message"));
+                WebElement  popup_ok = driver.findElement(By.id("popup_ok"));
+                popup_ok.click();//确认弹窗
+
+//                //获取alert对象
+//                Alert alert = driver.switchTo().alert();
+//                log.info("弹窗内容: " + alert.getText());
+//                alert.accept();
+            } catch (NoAlertPresentException aEx) {
+                log.error("弹窗没有找到");
             } catch (Exception e) {
                 e.printStackTrace();
             }
