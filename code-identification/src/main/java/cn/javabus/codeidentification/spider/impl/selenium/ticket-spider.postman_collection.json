@@ -186,10 +186,17 @@
 					},
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": ""
+							"raw": "{\n\t\"fpdm\":\"3200182130\",\n\t\"fphm\":\"93747037\",\n\t\"kprq\":\"20190325\",\n\t\"kjje\":\"82.07\"\n}"
 						},
 						"url": {
 							"raw": "http://172.17.6.115:7125/ticket/refreshCode",

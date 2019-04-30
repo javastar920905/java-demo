@@ -1,4 +1,4 @@
-package cn.javabus.codeidentification;
+package cn.javabus.codeidentification.util;
 
 import cn.javabus.codeidentification.spider.impl.ChinaTaxSpider;
 
